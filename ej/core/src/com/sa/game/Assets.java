@@ -38,6 +38,9 @@ public class Assets {
     public static TextureRegion charweapon2;
     public static TextureRegion charweapon3;
 
+    public static Texture gamename;
+    public static TextureRegion gamenameregion;
+
     public static BitmapFont font;
 
     public static Texture loadTexture(String file) {
@@ -45,6 +48,9 @@ public class Assets {
     }
 
     public static void load() {
+        gamename = new Texture(Gdx.files.internal("gamename.png"));
+        gamenameregion = new TextureRegion(gamename, 0, 0, 490, 49);
+
         background = new Texture(Gdx.files.internal("background.png"));
         backgroundRegion = new TextureRegion(background, 0, 0, 400, 208);
 

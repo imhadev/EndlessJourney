@@ -162,7 +162,7 @@ public class gamechar {
 
         if (enemy.getInc() < (enemy.getAtkupcost() + enemy.getDefupcost() + enemy.getAtkaddcost() + enemy.getDefaddcost())) {
 
-            if (round > 5) {
+            if (round > 6) {
                 upnum1 = rand.nextInt(3) + 1;
                 boolean enemyupcase = false;
                 while (enemyupcase == false) {
@@ -206,6 +206,7 @@ public class gamechar {
             else {
                 actions[9] = 0;
             }
+
             enadddef(actions, enemy);
         }
         else {
@@ -213,6 +214,82 @@ public class gamechar {
             enupgradedef(actions, enemy);
             enaddatk(actions, enemy);
             enadddef(actions, enemy);
+        }
+    }
+
+    public static void fightlvl2(int[] actions, int round, gamechar character, gamechar enemy, int immune, int bonusupgrade) {
+        for(int i = 0; i < actions.length; i++) {
+            actions[i] = 0;
+        }
+
+        //не может позволить себе все апгрейды
+        if (enemy.getInc() < (enemy.getAtkupcost() + enemy.getDefupcost() + enemy.getAtkaddcost() + enemy.getDefaddcost())) {
+
+            if (immune == 0) {
+                //если нет иммунитета и можно сделать бонусный апгрейд
+                if (bonusupgrade == 1) {
+                    enbonusupgrade(actions, enemy);
+                    enupgradeinc(actions, enemy);
+                    if (round > 6) {
+                        upnum1 = rand.nextInt(2) + 1;
+                        if (upnum1 == 1) {
+                            enupgradeatk(actions, enemy);
+                            enaddatk(actions, enemy);
+                        }
+                        else {
+                            enaddatk(actions, enemy);
+                            enupgradeatk(actions, enemy);
+                        }
+                    }
+                    else {
+                        enupgradeatk(actions, enemy);
+                        enaddatk(actions, enemy);
+                    }
+                }
+                //если нет иммунитета и нельзя сделать бонусный апгрейд
+                else {
+                    enupgradeinc(actions, enemy);
+                    enupgradedef(actions, enemy);
+                    enaddatk(actions, enemy);
+                    enadddef(actions, enemy);
+                }
+            }
+            else {
+                //если есть иммунитет и можно сделать бонусный апгрейд
+                if (bonusupgrade == 1) {
+                    upnum1 = rand.nextInt(2) + 1;
+                    if (upnum1 == 1) {
+                        actions[6] = 1;
+                        actions[12] = 1;
+
+                        enupgradeatk(actions, enemy);
+                    }
+                    else {
+                        actions[7] = 1;
+                        actions[12] = 2;
+
+                        enupgradeinc(actions, enemy);
+                    }
+                    enupgradedef(actions, enemy);
+                    enaddatk(actions, enemy);
+                }
+                //если есть иммунитет и нельзя сделать бонусный апгрейд
+                else {
+                    actions[12] = 0;
+
+                    enupgradeinc(actions, enemy);
+                    enupgradeatk(actions, enemy);
+                    enaddatk(actions, enemy);
+                }
+            }
+        }
+        else {
+            enupgradeatk(actions, enemy);
+            enupgradedef(actions, enemy);
+            enaddatk(actions, enemy);
+            if (immune == 0) {
+                enadddef(actions, enemy);
+            }
         }
     }
 
@@ -317,5 +394,21 @@ public class gamechar {
         actions[deffield1 + 2] = 1;
         actions[deffield2 + 2] = 1;
         actions[10] = 2;
+    }
+
+    public static void enbonusupgrade(int[] actions, gamechar enemy) {
+        if (enemy.getGold() >= enemy.getDefaddcost()) {
+            enemy.setGold(enemy.getGold() - enemy.getDefaddcost());
+
+            actions[8] = 1;
+            actions[10] = 2;
+            actions[12] = 3;
+            deffieldch1(actions);
+        }
+        else {
+            actions[8] = 1;
+            actions[10] = 1;
+            actions[12] = 3;
+        }
     }
 }

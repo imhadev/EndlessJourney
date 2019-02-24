@@ -48,7 +48,7 @@ public class MenuScreen extends ScreenAdapter {
 
         buttongame = new TextButton("play", mySkin);
         buttongame.setSize(WIDTH / 10, HEIGHT / 10);
-        buttongame.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 + HEIGHT / 20);
+        buttongame.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 - HEIGHT / 20);
         buttongame.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -63,7 +63,7 @@ public class MenuScreen extends ScreenAdapter {
 
         buttonhelp = new TextButton("help", mySkin);
         buttonhelp.setSize(WIDTH / 10, HEIGHT / 10);
-        buttonhelp.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 - 2 * HEIGHT / 20);
+        buttonhelp.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 - 4 * HEIGHT / 20);
         buttonhelp.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -95,7 +95,7 @@ public class MenuScreen extends ScreenAdapter {
 
         game.batch.enableBlending();
         game.batch.begin();
-
+        game.batch.draw(Assets.gamenameregion, WIDTH / 2 - 490 / 2, HEIGHT / 4 * 3 - 50, 490, 49);
         game.batch.end();
     }
 
