@@ -40,6 +40,7 @@ public class GameScreen extends ScreenAdapter {
 
     //game
     private int state;
+    private int beforefight = 1;
     private Group pauseGroup;
 
     private int levelnum;
@@ -203,13 +204,8 @@ public class GameScreen extends ScreenAdapter {
         buttonatk1 = new TextButton("", mySkin, "toggle");
         buttonatk1.setSize(btn_size1, btn_size1);
         buttonatk1.setPosition(WIDTH / 4 + btn_size1 * 5 / 2, HEIGHT / 4 * 3 - btn_size1 / 4 * 3);
-        buttonatk1.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttonatk1.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttonatk1);
@@ -217,13 +213,8 @@ public class GameScreen extends ScreenAdapter {
         buttonatk2 = new TextButton("", mySkin, "toggle");
         buttonatk2.setSize(btn_size1, btn_size1);
         buttonatk2.setPosition(WIDTH / 4 + btn_size1 * 5 / 2, HEIGHT / 4 * 3 - btn_size1 * 3 / 2 - btn_size1 / 4 * 3);
-        buttonatk2.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttonatk2.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttonatk2);
@@ -231,13 +222,8 @@ public class GameScreen extends ScreenAdapter {
         buttonatk3 = new TextButton("", mySkin, "toggle");
         buttonatk3.setSize(btn_size1, btn_size1);
         buttonatk3.setPosition(WIDTH / 4 + btn_size1 * 5 / 2, HEIGHT / 4 * 3 - btn_size1 * 6 / 2 - btn_size1 / 4 * 3);
-        buttonatk3.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttonatk3.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttonatk3);
@@ -251,13 +237,8 @@ public class GameScreen extends ScreenAdapter {
         buttondef1 = new TextButton("", mySkin, "toggle");
         buttondef1.setSize(btn_size1, btn_size1);
         buttondef1.setPosition(WIDTH / 4 + btn_size1, HEIGHT / 4 * 3 - btn_size1 / 4 * 3);
-        buttondef1.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttondef1.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttondef1);
@@ -265,13 +246,8 @@ public class GameScreen extends ScreenAdapter {
         buttondef2 = new TextButton("", mySkin, "toggle");
         buttondef2.setSize(btn_size1, btn_size1);
         buttondef2.setPosition(WIDTH / 4 + btn_size1, HEIGHT / 4 * 3 - btn_size1 * 3 / 2 - btn_size1 / 4 * 3);
-        buttondef2.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttondef2.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttondef2);
@@ -279,13 +255,8 @@ public class GameScreen extends ScreenAdapter {
         buttondef3 = new TextButton("", mySkin, "toggle");
         buttondef3.setSize(btn_size1, btn_size1);
         buttondef3.setPosition(WIDTH / 4 + btn_size1, HEIGHT / 4 * 3 - btn_size1 * 6 / 2 - btn_size1 / 4 * 3);
-        buttondef3.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
+        buttondef3.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
             }
         });
         stage.addActor(buttondef3);
@@ -303,59 +274,33 @@ public class GameScreen extends ScreenAdapter {
         buttonincup.setPosition(WIDTH / 20, HEIGHT / 17);
         buttonincup.addListener(new ChangeListener(){
             public void changed (ChangeEvent event, Actor actor) {
-                if (buttonincup.isChecked()) {
-                    character.setGold(character.getGold() - character.getIncupcost());
-                    character.setInc(character.getInc() + character.getIncupnum());
-                }
-                else {
-                    character.setInc(character.getInc() - character.getIncupnum());
-                    character.setGold(character.getGold() + character.getIncupcost());
+                if (beforefight == 0) {
+                    if (buttonincup.isChecked()) {
+                        character.setGold(character.getGold() - character.getIncupcost());
+                        character.setInc(character.getInc() + character.getIncupnum());
+                    } else {
+                        character.setInc(character.getInc() - character.getIncupnum());
+                        character.setGold(character.getGold() + character.getIncupcost());
+                    }
                 }
             }
         });
         stage.addActor(buttonincup);
 
-        /*
-        buttonincup = new TextButton("inc +" + String.valueOf(character.getIncupnum() + "\n" + String.valueOf(character.getIncupcost()) + " gold"), mySkin, "toggle");
-        buttonincup.setSize(btn_size2, btn_size2);
-        buttonincup.setPosition(WIDTH / 20, HEIGHT / 17);
-        buttonincup.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttonincup.isChecked()) {
-                    character.setGold(character.getGold() - character.getIncupcost());
-                    character.setInc(character.getInc() + character.getIncupnum());
-                }
-                else {
-                    character.setInc(character.getInc() - character.getIncupnum());
-                    character.setGold(character.getGold() + character.getIncupcost());
-                }
-                return true;
-            }
-        });
-        stage.addActor(buttonincup);*/
-
         buttonatkup = new TextButton("atk +" + String.valueOf(character.getAtkupnum() + "\n" + String.valueOf(character.getAtkupcost()) + " gold"), mySkin, "toggle");
         buttonatkup.setSize(btn_size2, btn_size2);
         buttonatkup.setPosition(WIDTH / 20 + btn_size2 / 2 + btn_size1, HEIGHT / 17);
-        buttonatkup.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttonatkup.isChecked()) {
-                    character.setGold(character.getGold() - character.getAtkupcost());
-                    character.setAtk(character.getAtk() + character.getAtkupnum());
+        buttonatkup.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (beforefight == 0) {
+                    if (buttonatkup.isChecked()) {
+                        character.setGold(character.getGold() - character.getAtkupcost());
+                        character.setAtk(character.getAtk() + character.getAtkupnum());
+                    } else {
+                        character.setAtk(character.getAtk() - character.getAtkupnum());
+                        character.setGold(character.getGold() + character.getAtkupcost());
+                    }
                 }
-                else {
-                    character.setAtk(character.getAtk() - character.getAtkupnum());
-                    character.setGold(character.getGold() + character.getAtkupcost());
-                }
-                return true;
             }
         });
         stage.addActor(buttonatkup);
@@ -363,21 +308,17 @@ public class GameScreen extends ScreenAdapter {
         buttondefup = new TextButton("def +" + String.valueOf(character.getDefupnum() + "\n" + String.valueOf(character.getDefupcost()) + " gold"), mySkin, "toggle");
         buttondefup.setSize(btn_size2, btn_size2);
         buttondefup.setPosition(WIDTH / 20 + btn_size2 + btn_size1 * 2, HEIGHT / 17);
-        buttondefup.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttondefup.isChecked()) {
-                    character.setGold(character.getGold() - character.getDefupcost());
-                    character.setDef(character.getDef() + character.getDefupnum());
+        buttondefup.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (beforefight == 0) {
+                    if (buttondefup.isChecked()) {
+                        character.setGold(character.getGold() - character.getDefupcost());
+                        character.setDef(character.getDef() + character.getDefupnum());
+                    } else {
+                        character.setDef(character.getDef() - character.getDefupnum());
+                        character.setGold(character.getGold() + character.getDefupcost());
+                    }
                 }
-                else {
-                    character.setDef(character.getDef() - character.getDefupnum());
-                    character.setGold(character.getGold() + character.getDefupcost());
-                }
-                return true;
             }
         });
         stage.addActor(buttondefup);
@@ -388,22 +329,18 @@ public class GameScreen extends ScreenAdapter {
         buttonaddatkchar = new TextButton("+1 atk" + "\n" + String.valueOf(character.getAtkaddcost()) + " gold", mySkin, "toggle");
         buttonaddatkchar.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonaddatkchar.setPosition(WIDTH / 20 + btn_size1, HEIGHT / 4);
-        buttonaddatkchar.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttonaddatkchar.isChecked()) {
-                    character.setGold(character.getGold() - character.getAtkaddcost());
+        buttonaddatkchar.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (beforefight == 0) {
+                    if (buttonaddatkchar.isChecked()) {
+                        character.setGold(character.getGold() - character.getAtkaddcost());
+                    } else {
+                        character.setGold(character.getGold() + character.getAtkaddcost());
+                        buttonatk1.setChecked(false);
+                        buttonatk2.setChecked(false);
+                        buttonatk3.setChecked(false);
+                    }
                 }
-                else {
-                    character.setGold(character.getGold() + character.getAtkaddcost());
-                    buttonatk1.setChecked(false);
-                    buttonatk2.setChecked(false);
-                    buttonatk3.setChecked(false);
-                }
-                return true;
             }
         });
         stage.addActor(buttonaddatkchar);
@@ -412,22 +349,18 @@ public class GameScreen extends ScreenAdapter {
         buttonadddefchar = new TextButton("+1 def" + "\n" + String.valueOf(character.getDefaddcost()) + " gold", mySkin, "toggle");
         buttonadddefchar.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonadddefchar.setPosition(WIDTH / 20 + btn_size1 + btn_size2, HEIGHT / 4);
-        buttonadddefchar.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttonadddefchar.isChecked()) {
-                    character.setGold(character.getGold() - character.getDefaddcost());
+        buttonadddefchar.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (beforefight == 0) {
+                    if (buttonadddefchar.isChecked()) {
+                        character.setGold(character.getGold() - character.getDefaddcost());
+                    } else {
+                        character.setGold(character.getGold() + character.getDefaddcost());
+                        buttondef1.setChecked(false);
+                        buttondef2.setChecked(false);
+                        buttondef3.setChecked(false);
+                    }
                 }
-                else {
-                    character.setGold(character.getGold() + character.getDefaddcost());
-                    buttondef1.setChecked(false);
-                    buttondef2.setChecked(false);
-                    buttondef3.setChecked(false);
-                }
-                return true;
             }
         });
         stage.addActor(buttonadddefchar);
@@ -619,13 +552,9 @@ public class GameScreen extends ScreenAdapter {
         buttonfight = new TextButton("fight", mySkin, "toggle");
         buttonfight.setSize(btn_size2 * 2, btn_size2);
         buttonfight.setPosition(WIDTH / 2 - btn_size2, HEIGHT / 5);
-        buttonfight.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                if (!buttonfight.isChecked()) {
+        buttonfight.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (buttonfight.isChecked()) {
 
                     //enemy actions
                     if (levelnum == 1) {
@@ -640,24 +569,21 @@ public class GameScreen extends ScreenAdapter {
                         if ((buttonatk1.isChecked()) && (enemyactions[3] != 1)) {
                             if (enemy.getDef() >= character.getAtk()) {
                                 hpdifen = hpdifen + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                             }
                         }
                         if ((buttonatk2.isChecked()) && (enemyactions[4] != 1)) {
                             if (enemy.getDef() >= character.getAtk()) {
                                 hpdifen = hpdifen + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                             }
                         }
                         if ((buttonatk3.isChecked()) && (enemyactions[5] != 1)) {
                             if (enemy.getDef() >= character.getAtk()) {
                                 hpdifen = hpdifen + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                             }
                         }
@@ -665,24 +591,21 @@ public class GameScreen extends ScreenAdapter {
                         if ((enemyactions[0] == 1) && (!buttondef1.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
                         if ((enemyactions[1] == 1) && (!buttondef2.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
                         if ((enemyactions[2] == 1) && (!buttondef3.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
@@ -731,24 +654,21 @@ public class GameScreen extends ScreenAdapter {
                         if ((enemyactions[0] == 1) && (!buttondef1.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
                         if ((enemyactions[1] == 1) && (!buttondef2.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
                         if ((enemyactions[2] == 1) && (!buttondef3.isChecked())) {
                             if (character.getDef() >= enemy.getAtk()) {
                                 hpdifchar = hpdifchar + 1;
-                            }
-                            else {
+                            } else {
                                 hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                             }
                         }
@@ -817,8 +737,7 @@ public class GameScreen extends ScreenAdapter {
                     if (enemyactions[10] == 2) {
                         buttonadddefen.setChecked(true);
                     }
-                }
-                else {
+                } else {
                     round++;
 
                     character.setHp(character.getHp() - hpdifchar);
@@ -834,16 +753,14 @@ public class GameScreen extends ScreenAdapter {
                             if (immune == 0) {
                                 enemy.setHp(enemy.getHp() - hpdifen);
                                 immune = 1;
-                            }
-                            else {
+                            } else {
                                 immune = 0;
                             }
                         }
 
                         if (bonusupgrade == 0) {
                             bonusupgrade = 1;
-                        }
-                        else {
+                        } else {
                             bonusupgrade = 0;
                         }
 
@@ -851,6 +768,7 @@ public class GameScreen extends ScreenAdapter {
                     }
 
 
+                    beforefight = 1;
 
                     buttondisable = false;
                     buttonatk1.setChecked(false);
@@ -877,19 +795,19 @@ public class GameScreen extends ScreenAdapter {
                     buttonaddatken.setChecked(false);
                     buttonadddefen.setChecked(false);
 
+                    beforefight = 0;
+
                     if (character.getHp() <= 0) {
                         game.setScreen(new GameOverScreen(game, 0));
                     }
                     if ((enemy.getHp() <= 0) && (character.getHp() > 0)) {
                         if (levelnum == 2) {
                             game.setScreen(new GameOverScreen(game, 1));
-                        }
-                        else {
+                        } else {
                             game.setScreen(new GameScreen(game, levelnum + 1, character.getAtk(), character.getDef()));
                         }
                     }
                 }
-                return true;
             }
         });
         stage.addActor(buttonfight);
