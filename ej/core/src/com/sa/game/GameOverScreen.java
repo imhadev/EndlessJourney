@@ -55,7 +55,7 @@ public class GameOverScreen extends ScreenAdapter {
 
         labelwin = new Label("You Won", label1Style);
         labelwin.setSize(50, 30);
-        labelwin.setPosition(WIDTH / 2 - 50 /2, HEIGHT / 2 - 30 / 2);
+        labelwin.setPosition(WIDTH / 2 - 50 / 2, HEIGHT / 2 - 30 / 2);
         labelwin.setAlignment(Align.center);
         stage.addActor(labelwin);
     }
@@ -117,5 +117,12 @@ public class GameOverScreen extends ScreenAdapter {
     public void hide() {
         stage.dispose();
         myFont.dispose();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        camera.setToOrtho(false, WIDTH, HEIGHT);
+        camera.update();
+        stage.getViewport().update(width, height, true);
     }
 }

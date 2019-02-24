@@ -16,21 +16,20 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import static com.sa.game.MainClass.HEIGHT;
 import static com.sa.game.MainClass.WIDTH;
 
-public class MenuScreen extends ScreenAdapter {
+public class HelpScreen extends ScreenAdapter {
 
     private MainClass game;
 
     private Stage stage;
     private Skin mySkin;
 
-    private Button buttongame;
-    private Button buttonhelp;
+    private Button buttonmenu;
 
     private OrthographicCamera camera;
     Vector3 touchPoint;
 
 
-    public MenuScreen (MainClass game) {
+    public HelpScreen (MainClass game) {
         this.game = game;
 
         camera = new OrthographicCamera(MainClass.v_width, MainClass.v_height);
@@ -46,35 +45,20 @@ public class MenuScreen extends ScreenAdapter {
 
         mySkin = new Skin(Gdx.files.internal("skin/clean-crispy-ui.json"));
 
-        buttongame = new TextButton("play", mySkin);
-        buttongame.setSize(WIDTH / 10, HEIGHT / 10);
-        buttongame.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 + HEIGHT / 20);
-        buttongame.addListener(new InputListener(){
+        buttonmenu = new TextButton("menu", mySkin);
+        buttonmenu.setSize(WIDTH / 10, HEIGHT / 10);
+        buttonmenu.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 15);
+        buttonmenu.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen(new GameScreen(game, 1, 7, 3));
+                game.setScreen(new MenuScreen(game));
                 return true;
             }
         });
-        stage.addActor(buttongame);
-
-        buttonhelp = new TextButton("help", mySkin);
-        buttonhelp.setSize(WIDTH / 10, HEIGHT / 10);
-        buttonhelp.setPosition(WIDTH / 2 - WIDTH / 20, HEIGHT / 2 - 2 * HEIGHT / 20);
-        buttonhelp.addListener(new InputListener(){
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen(new HelpScreen(game));
-                return true;
-            }
-        });
-        stage.addActor(buttonhelp);
+        stage.addActor(buttonmenu);
     }
 
     public void update() {

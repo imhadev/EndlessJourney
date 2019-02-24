@@ -27,8 +27,16 @@ public class Assets {
     public static TextureRegion deficon;
 
     public static Texture characters;
-    public static TextureRegion character;
+    public static TextureRegion character1;
+    public static TextureRegion character2;
+    public static TextureRegion character3;
+
     public static TextureRegion enemylvl1;
+
+    public static Texture weapon;
+    public static TextureRegion charweapon1;
+    public static TextureRegion charweapon2;
+    public static TextureRegion charweapon3;
 
     public static BitmapFont font;
 
@@ -55,8 +63,16 @@ public class Assets {
         deficon = new TextureRegion(gui, 32, 192, 32, 32);
 
         characters = loadTexture("characters.png");
-        character = new TextureRegion(characters, 192, 236, 15, 20);
+        character1 = new TextureRegion(characters, 161, 240, 15, 16);
+        character2 = new TextureRegion(characters, 192, 236, 15, 20);
+        character3 = new TextureRegion(characters, 240, 236, 15, 20);
+        
         enemylvl1 = new TextureRegion(characters, 102, 182, 20, 25);
+
+        weapon = loadTexture("weapon.png");
+        charweapon1 = new TextureRegion(weapon, 0, 8, 8, 21);
+        charweapon2 = new TextureRegion(weapon, 10, 4, 10, 25);
+        charweapon3 = new TextureRegion(weapon, 22, 0, 10, 29);
 
         font = new BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false);
     }

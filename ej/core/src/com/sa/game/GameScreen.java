@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -20,8 +21,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
-import java.util.Random;
 
 import static com.sa.game.MainClass.HEIGHT;
 import static com.sa.game.MainClass.WIDTH;
@@ -37,22 +36,20 @@ public class GameScreen extends ScreenAdapter {
     Vector3 touchPoint;
 
     //game
+    private int state;
+    private Group pauseGroup;
+
     private int levelnum;
-    private Random rand = new Random();
+    private int round;
 
-    private int enemyatk1;
-    private int enemyatk2;
-    private int enemydef1;
-    private int enemydef2;
-    private boolean[] enemyup;
-    private  int randadd;
-    private int randup;
-    private int randstop;
+    private boolean buttondisable = false;
 
-    private int enemyatknum;
-    private int enemydefnum;
+    private int[] enemyactions = new int[11];
 
-    boolean buttondisable = false;
+    private int hpdifchar;
+    private int golddifchar;
+    private int hpdifen;
+    private int golddifen;
 
     //characters
     gamechar character;
@@ -60,6 +57,7 @@ public class GameScreen extends ScreenAdapter {
 
     //ui
     private Stage stage;
+    private Stage stagepause;
     private Skin mySkin;
 
     private Button buttonatk1;
@@ -93,23 +91,35 @@ public class GameScreen extends ScreenAdapter {
 
 
     private Button buttonfight;
+    private Button buttonpause;
+    private Button buttonresume;
+    private Button buttonmenu;
 
     private ButtonGroup buttonGroup1;
     private ButtonGroup buttonGroup2;
 
-    private Label.LabelStyle label1Style;
+    private Label.LabelStyle label1Style1;
+    private Label.LabelStyle label1Style2;
+    private Label.LabelStyle label1Style3;
     private BitmapFont myFont;
     private Label labelhpchar;
+    private Label labelhpchardif;
     private Label labelgoldchar;
+    private Label labelgoldchardif;
     private Label labelincchar;
     private Label labelatkchar;
     private Label labeldefchar;
 
     private Label labelhpen;
+    private Label labelhpendif;
     private Label labelgolden;
+    private Label labelgoldendif;
     private Label labelincen;
     private Label labelatken;
     private Label labeldefen;
+
+    private Label labelround;
+    private Label labelenemyabout1;
 
     //screen
     /*private final int height1 = Gdx.app.getGraphics().getHeight();
@@ -118,6 +128,8 @@ public class GameScreen extends ScreenAdapter {
     private int btn_size2 = WIDTH / 14;
 
     public GameScreen(MainClass game, int levelnum, int atk, int def) {
+
+        state = 0;
 
         this.game = game;
         this.levelnum = levelnum;
@@ -129,22 +141,32 @@ public class GameScreen extends ScreenAdapter {
 
         touchPoint = new Vector3();
 
-        character = new gamechar(100, 10, 5, atk, def);
+        character = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
         switch(levelnum) {
             case 2: {
-                enemy = new gamechar(110, 15, 5, 17, 5);
+                enemy = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
                 break;
             }
             case 3: {
-                enemy = new gamechar(150, 10, 5, 11, 5);
+                enemy = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
+                break;
+            }
+
+            case 4: {
+                enemy = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
+                break;
+            }
+            case 5: {
+                enemy = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
                 break;
             }
 
             default: {
-                enemy = new gamechar(100, 10, 5, 7, 3);
+                enemy = new gamechar(100, 10, 5, atk, def, 10, 10, 10 ,15 ,15, 5, 3, 2, 5);
                 break;
             }
         }
+        round = 1;
 
 
         //ui
@@ -154,9 +176,11 @@ public class GameScreen extends ScreenAdapter {
 
     public void addbuttons() {
         stage = new Stage(new StretchViewport(WIDTH, HEIGHT));
+        stagepause = new Stage(new StretchViewport(WIDTH, HEIGHT));
         //stage = new Stage();
         //stage = new Stage(new ExtendViewport(1280, 720, camera));
-        Gdx.input.setInputProcessor(stage);
+        //Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(stagepause);
 
         mySkin = new Skin(Gdx.files.internal("skin/clean-crispy-ui.json"));
 
@@ -259,7 +283,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         //character upgrade buttons
-        buttonincup = new TextButton("inc +5", mySkin, "toggle");
+        buttonincup = new TextButton("inc +" + String.valueOf(character.getIncupnum() + "\n" + String.valueOf(character.getIncupcost()) + " gold"), mySkin, "toggle");
         buttonincup.setSize(btn_size2, btn_size2);
         buttonincup.setPosition(WIDTH / 20, HEIGHT / 17);
         buttonincup.addListener(new InputListener(){
@@ -269,19 +293,19 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 if (!buttonincup.isChecked()) {
-                    character.setGold(character.getGold() - 10);
-                    character.setInc(character.getInc() + 5);
+                    character.setGold(character.getGold() - character.getIncupcost());
+                    character.setInc(character.getInc() + character.getIncupnum());
                 }
                 else {
-                    character.setInc(character.getInc() - 5);
-                    character.setGold(character.getGold() + 10);
+                    character.setInc(character.getInc() - character.getIncupnum());
+                    character.setGold(character.getGold() + character.getIncupcost());
                 }
                 return true;
             }
         });
         stage.addActor(buttonincup);
 
-        buttonatkup = new TextButton("atk +4", mySkin, "toggle");
+        buttonatkup = new TextButton("atk +" + String.valueOf(character.getAtkupnum() + "\n" + String.valueOf(character.getAtkupcost()) + " gold"), mySkin, "toggle");
         buttonatkup.setSize(btn_size2, btn_size2);
         buttonatkup.setPosition(WIDTH / 20 + btn_size2 / 2 + btn_size1, HEIGHT / 17);
         buttonatkup.addListener(new InputListener(){
@@ -291,19 +315,19 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 if (!buttonatkup.isChecked()) {
-                    character.setGold(character.getGold() - 10);
-                    character.setAtk(character.getAtk() + 4);
+                    character.setGold(character.getGold() - character.getAtkupcost());
+                    character.setAtk(character.getAtk() + character.getAtkupnum());
                 }
                 else {
-                    character.setAtk(character.getAtk() - 4);
-                    character.setGold(character.getGold() + 10);
+                    character.setAtk(character.getAtk() - character.getAtkupnum());
+                    character.setGold(character.getGold() + character.getAtkupcost());
                 }
                 return true;
             }
         });
         stage.addActor(buttonatkup);
 
-        buttondefup = new TextButton("def +2", mySkin, "toggle");
+        buttondefup = new TextButton("def +" + String.valueOf(character.getDefupnum() + "\n" + String.valueOf(character.getDefupcost()) + " gold"), mySkin, "toggle");
         buttondefup.setSize(btn_size2, btn_size2);
         buttondefup.setPosition(WIDTH / 20 + btn_size2 + btn_size1 * 2, HEIGHT / 17);
         buttondefup.addListener(new InputListener(){
@@ -313,12 +337,12 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 if (!buttondefup.isChecked()) {
-                    character.setGold(character.getGold() - 10);
-                    character.setDef(character.getDef() + 2);
+                    character.setGold(character.getGold() - character.getDefupcost());
+                    character.setDef(character.getDef() + character.getDefupnum());
                 }
                 else {
-                    character.setDef(character.getDef() - 2);
-                    character.setGold(character.getGold() + 10);
+                    character.setDef(character.getDef() - character.getDefupnum());
+                    character.setGold(character.getGold() + character.getDefupcost());
                 }
                 return true;
             }
@@ -328,7 +352,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         //character add atk/def buttons
-        buttonaddatkchar = new TextButton("+1 atk", mySkin, "toggle");
+        buttonaddatkchar = new TextButton("+1 atk" + "\n" + String.valueOf(character.getAtkaddcost()) + " gold", mySkin, "toggle");
         buttonaddatkchar.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonaddatkchar.setPosition(WIDTH / 20 + btn_size1, HEIGHT / 4);
         buttonaddatkchar.addListener(new InputListener(){
@@ -338,10 +362,10 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 if (!buttonaddatkchar.isChecked()) {
-                    character.setGold(character.getGold() - 15);
+                    character.setGold(character.getGold() - character.getAtkaddcost());
                 }
                 else {
-                    character.setGold(character.getGold() + 15);
+                    character.setGold(character.getGold() + character.getAtkaddcost());
                     buttonatk1.setChecked(false);
                     buttonatk2.setChecked(false);
                     buttonatk3.setChecked(false);
@@ -352,7 +376,7 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(buttonaddatkchar);
 
 
-        buttonadddefchar = new TextButton("+1 def", mySkin, "toggle");
+        buttonadddefchar = new TextButton("+1 def" + "\n" + String.valueOf(character.getDefaddcost()) + " gold", mySkin, "toggle");
         buttonadddefchar.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonadddefchar.setPosition(WIDTH / 20 + btn_size1 + btn_size2, HEIGHT / 4);
         buttonadddefchar.addListener(new InputListener(){
@@ -362,10 +386,10 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 if (!buttonadddefchar.isChecked()) {
-                    character.setGold(character.getGold() - 15);
+                    character.setGold(character.getGold() - character.getDefaddcost());
                 }
                 else {
-                    character.setGold(character.getGold() + 15);
+                    character.setGold(character.getGold() + character.getDefaddcost());
                     buttondef1.setChecked(false);
                     buttondef2.setChecked(false);
                     buttondef3.setChecked(false);
@@ -475,7 +499,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         //enemy upgrade buttons
-        buttonincupen = new TextButton("inc +5", mySkin, "toggle");
+        buttonincupen = new TextButton("inc +" + String.valueOf(enemy.getIncupnum() + "\n" + String.valueOf(enemy.getIncupcost()) + " gold"), mySkin, "toggle");
         buttonincupen.setSize(btn_size2, btn_size2);
         buttonincupen.setPosition(WIDTH - (WIDTH / 20 + btn_size2 + btn_size1 * 2) - btn_size2, HEIGHT / 17);
         buttonincupen.addListener(new InputListener(){
@@ -489,7 +513,7 @@ public class GameScreen extends ScreenAdapter {
         });
         stage.addActor(buttonincupen);
 
-        buttonatkupen = new TextButton("atk +4", mySkin, "toggle");
+        buttonatkupen = new TextButton("atk +" + String.valueOf(enemy.getAtkupnum() + "\n" + String.valueOf(enemy.getAtkupcost()) + " gold"), mySkin, "toggle");
         buttonatkupen.setSize(btn_size2, btn_size2);
         buttonatkupen.setPosition(WIDTH - (WIDTH / 20 + btn_size2 / 2 + btn_size1) - btn_size2, HEIGHT / 17);
         buttonatkupen.addListener(new InputListener(){
@@ -503,7 +527,7 @@ public class GameScreen extends ScreenAdapter {
         });
         stage.addActor(buttonatkupen);
 
-        buttondefupen = new TextButton("def +2", mySkin, "toggle");
+        buttondefupen = new TextButton("def +" + String.valueOf(enemy.getDefupnum() + "\n" + String.valueOf(enemy.getDefupcost()) + " gold"), mySkin, "toggle");
         buttondefupen.setSize(btn_size2, btn_size2);
         buttondefupen.setPosition(WIDTH - (WIDTH / 20) - btn_size2, HEIGHT / 17);
         buttondefupen.addListener(new InputListener(){
@@ -524,7 +548,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         //enemy add atk/def buttons
-        buttonaddatken = new TextButton("+1 atk", mySkin, "toggle");
+        buttonaddatken = new TextButton("+1 atk" + "\n" + String.valueOf(enemy.getAtkaddcost()) + " gold", mySkin, "toggle");
         buttonaddatken.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonaddatken.setPosition(WIDTH - (WIDTH / 20 + btn_size1 + btn_size2) - btn_size2, HEIGHT / 4);
         buttonaddatken.addListener(new InputListener(){
@@ -539,7 +563,7 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(buttonaddatken);
 
 
-        buttonadddefen = new TextButton("+1 def", mySkin, "toggle");
+        buttonadddefen = new TextButton("+1 def" + "\n" + String.valueOf(enemy.getDefaddcost()) + " gold", mySkin, "toggle");
         buttonadddefen.setSize(btn_size1 + 10, btn_size1 + 10);
         buttonadddefen.setPosition(WIDTH - (WIDTH / 20 + btn_size1) - btn_size2, HEIGHT / 4);
         buttonadddefen.addListener(new InputListener(){
@@ -561,7 +585,7 @@ public class GameScreen extends ScreenAdapter {
         //fight button
         buttonfight = new TextButton("fight", mySkin, "toggle");
         buttonfight.setSize(btn_size2 * 2, btn_size2);
-        buttonfight.setPosition(WIDTH / 2 - btn_size2, HEIGHT / 6);
+        buttonfight.setPosition(WIDTH / 2 - btn_size2, HEIGHT / 5);
         buttonfight.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -571,173 +595,72 @@ public class GameScreen extends ScreenAdapter {
                 if (!buttonfight.isChecked()) {
 
                     //enemy actions
-
-                    enemyatknum = 1;
-                    enemydefnum = 1;
-                    if (enemy.getGold() >= 40) {
-                        enemyatknum = 2;
-                        enemydefnum = 2;
-                        enemy.setGold(enemy.getGold() - 15 * 2);
-                    }
-                    else {
-                        if (enemy.getGold() >= 15) {
-                            randadd = rand.nextInt(8);
-                            if (randadd == 0) {
-                                enemyatknum = 2;
-                                enemy.setGold(enemy.getGold() - 15);
-                            }
-                            if (randadd == 1) {
-                                enemydefnum = 2;
-                                enemy.setGold(enemy.getGold() - 15);
-                            }
-                        }
-                    }
-
-
-                    boolean enemyatkcase = false;
-                    boolean enemydefcase = false;
-
-                    if (enemyatknum == 2) {
-                        enemyatk1 = rand.nextInt(3) + 1;
-                        while (enemyatkcase == false) {
-                            enemyatk2 = rand.nextInt(3) + 1;
-                            if (enemyatk2 != enemyatk1) {
-                                enemyatkcase = true;
-                            }
-                        }
-                    }
-                    else {
-                        enemyatk1 = rand.nextInt(4);
-                        enemyatk2 = 0;
-                        if (enemyatk1 == 0) {
-                            enemyatknum = 0;
-                        }
-                    }
-
-                    if (enemydefnum == 2) {
-                        enemydef1 = rand.nextInt(3) + 1;
-                        while (enemydefcase == false) {
-                            enemydef2 = rand.nextInt(3) + 1;
-                            if (enemydef2 != enemydef1) {
-                                enemydefcase = true;
-                            }
-                        }
-                    }
-                    else {
-                        enemydef1 = rand.nextInt(3) + 1;
-                        enemydef2 = 0;
-                    }
-
-
-                    enemyup = new boolean[3];
-                    randup = rand.nextInt(3);
-                    boolean f = true;
-
-
-                    for (int i = 0; i < 3; i++) {
-                        enemyup[i] = false;
-                    }
-
-                    while (f) {
-                        randstop = rand.nextInt(10);
-                        if (randstop > 8) {
-                            break;
-                        }
-                        if (enemy.getGold() >= 10) {
-                            if (enemyup[randup] == false) {
-                                if (randup == 0) {
-                                    enemy.setInc(enemy.getInc() + 5);
-                                    enemy.setGold(enemy.getGold() - 10);
-                                }
-                                if (randup == 1) {
-                                    enemy.setAtk(enemy.getAtk() + 4);
-                                    enemy.setGold(enemy.getGold() - 10);
-                                }
-                                if (randup == 2) {
-                                    enemy.setDef(enemy.getDef() + 2);
-                                    enemy.setGold(enemy.getGold() - 10);
-                                }
-
-                                enemyup[randup] = true;
-
-                                if (randup == 2) {
-                                    randup = 0;
-                                }
-                                else {
-                                    randup++;
-                                }
-                            }
-                            else {
-                                f = false;
-                            }
-                        }
-                        else {
-                            f = false;
-                        }
-                    }
-
+                    gamechar.fightlvl1(enemyactions, round, character, enemy);
 
                     //fight
-                    if ((buttonatk1.isChecked()) && (enemydef1 != 1) && (enemydef2 != 1)) {
+                    hpdifchar = 0;
+                    golddifchar = character.getInc();
+                    hpdifen = 0;
+                    golddifen = enemy.getInc();
+
+                    if ((buttonatk1.isChecked()) && (enemyactions[3] != 1)) {
                         if (enemy.getDef() >= character.getAtk()) {
-                            enemy.setHp(enemy.getHp() - 1);
+                            hpdifen = hpdifen + 1;
                         }
                         else {
-                            enemy.setHp(enemy.getHp() - (character.getAtk() - enemy.getDef()));
+                            hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                         }
                     }
-                    if ((buttonatk2.isChecked()) && (enemydef1 != 2) && (enemydef2 != 2)) {
+                    if ((buttonatk2.isChecked()) && (enemyactions[4] != 1)) {
                         if (enemy.getDef() >= character.getAtk()) {
-                            enemy.setHp(enemy.getHp() - 1);
+                            hpdifen = hpdifen + 1;
                         }
                         else {
-                            enemy.setHp(enemy.getHp() - (character.getAtk() - enemy.getDef()));
+                            hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                         }
                     }
-                    if ((buttonatk3.isChecked()) && (enemydef1 != 3) && (enemydef2 != 3)) {
+                    if ((buttonatk3.isChecked()) && (enemyactions[5] != 1)) {
                         if (enemy.getDef() >= character.getAtk()) {
-                            enemy.setHp(enemy.getHp() - 1);
+                            hpdifen = hpdifen + 1;
                         }
                         else {
-                            enemy.setHp(enemy.getHp() - (character.getAtk() - enemy.getDef()));
+                            hpdifen = hpdifen + (character.getAtk() - enemy.getDef());
                         }
                     }
 
-                    if (((enemyatk1 == 1) || (enemyatk2 == 1)) && (!buttondef1.isChecked())) {
+                    if ((enemyactions[0] == 1) && (!buttondef1.isChecked())) {
                         if (character.getDef() >= enemy.getAtk()) {
-                            character.setHp(character.getHp() - 1);
+                            hpdifchar = hpdifchar + 1;
                         }
                         else {
-                            character.setHp(character.getHp() - (enemy.getAtk() - character.getDef()));
+                            hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                         }
                     }
-                    if (((enemyatk1 == 2) || (enemyatk2 == 2)) && (!buttondef2.isChecked())) {
+                    if ((enemyactions[1] == 1) && (!buttondef2.isChecked())) {
                         if (character.getDef() >= enemy.getAtk()) {
-                            character.setHp(character.getHp() - 1);
+                            hpdifchar = hpdifchar + 1;
                         }
                         else {
-                            character.setHp(character.getHp() - (enemy.getAtk() - character.getDef()));
+                            hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                         }
                     }
-                    if (((enemyatk1 == 3) || (enemyatk2 == 3)) && (!buttondef3.isChecked())) {
+                    if ((enemyactions[2] == 1) && (!buttondef3.isChecked())) {
                         if (character.getDef() >= enemy.getAtk()) {
-                            character.setHp(character.getHp() - 1);
+                            hpdifchar = hpdifchar + 1;
                         }
                         else {
-                            character.setHp(character.getHp() - (enemy.getAtk() - character.getDef()));
+                            hpdifchar = hpdifchar + (enemy.getAtk() - character.getDef());
                         }
                     }
 
 
                     //other
-                    character.setGold(character.getGold() + character.getInc());
                     if ((!buttonatk1.isChecked()) && (!buttonatk2.isChecked()) && (!buttonatk3.isChecked())) {
-                        character.setGold(character.getGold() + 5);
+                        golddifchar = golddifchar + character.getBonusgold();
                     }
 
-                    enemy.setGold(enemy.getGold() + enemy.getInc());
-                    if (enemyatknum == 0) {
-                        enemy.setGold(enemy.getGold() + 5);
+                    if (enemyactions[9] == 0) {
+                        golddifen = golddifen + enemy.getBonusgold();
                     }
 
                     buttondisable = true;
@@ -754,44 +677,52 @@ public class GameScreen extends ScreenAdapter {
                     buttonadddefchar.setTouchable(Touchable.disabled);
 
 
-                    if ((enemyatk1 == 1) || (enemyatk2 == 1)) {
+                    if (enemyactions[0] == 1) {
                         buttonatken1.setChecked(true);
                     }
-                    if ((enemyatk1 == 2) || (enemyatk2 == 2)) {
+                    if (enemyactions[1] == 1) {
                         buttonatken2.setChecked(true);
                     }
-                    if ((enemyatk1 == 3) || (enemyatk2 == 3)) {
+                    if (enemyactions[2] == 1) {
                         buttonatken3.setChecked(true);
                     }
 
-                    if ((enemydef1 == 1) || (enemydef2 == 1)) {
+                    if (enemyactions[3] == 1) {
                         buttondefen1.setChecked(true);
                     }
-                    if ((enemydef1 == 2) || (enemydef2 == 2)) {
+                    if (enemyactions[4] == 1) {
                         buttondefen2.setChecked(true);
                     }
-                    if ((enemydef1 == 3) || (enemydef2 == 3)) {
+                    if (enemyactions[5] == 1) {
                         buttondefen3.setChecked(true);
                     }
 
-                    if (enemyup[0] == true) {
+                    if (enemyactions[6] == 1) {
                         buttonincupen.setChecked(true);
                     }
-                    if (enemyup[1] == true) {
+                    if (enemyactions[7] == 1) {
                         buttonatkupen.setChecked(true);
                     }
-                    if (enemyup[2] == true) {
+                    if (enemyactions[8] == 1) {
                         buttondefupen.setChecked(true);
                     }
 
-                    if (enemyatknum == 2) {
+                    if (enemyactions[9] == 2) {
                         buttonaddatken.setChecked(true);
                     }
-                    if (enemydefnum == 2) {
+                    if (enemyactions[10] == 2) {
                         buttonadddefen.setChecked(true);
                     }
                 }
                 else {
+                    round++;
+
+                    character.setHp(character.getHp() - hpdifchar);
+                    character.setGold(character.getGold() + golddifchar);
+                    enemy.setHp(enemy.getHp() - hpdifen);
+                    enemy.setGold(enemy.getGold() + golddifen);
+
+
                     buttondisable = false;
                     buttonatk1.setChecked(false);
                     buttonatk2.setChecked(false);
@@ -833,40 +764,108 @@ public class GameScreen extends ScreenAdapter {
             }
         });
         stage.addActor(buttonfight);
+
+
+        buttonpause = new TextButton("pause", mySkin);
+        buttonpause.setSize(btn_size2 * 3 / 2, btn_size2 * 2 / 3);
+        buttonpause.setPosition(WIDTH / 2 - btn_size2 * 3 / 4, HEIGHT / 15);
+        buttonpause.addListener(new InputListener(){
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                pause();
+                return true;
+            }
+        });
+        stage.addActor(buttonpause);
+
+        buttonresume = new TextButton("resume", mySkin);
+        buttonresume.setSize(btn_size2 * 3 / 2, btn_size2 * 2 / 3);
+        buttonresume.setPosition(WIDTH / 2 - btn_size2 * 3 / 4, HEIGHT / 15);
+        buttonresume.addListener(new InputListener(){
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                resume();
+                return true;
+            }
+        });
+        stagepause.addActor(buttonresume);
+
+        buttonmenu = new TextButton("menu", mySkin);
+        buttonmenu.setSize(btn_size2 * 3 / 2, btn_size2 * 2 / 3);
+        buttonmenu.setPosition(WIDTH / 2 - btn_size2 * 3 / 4, HEIGHT / 5);
+        buttonmenu.addListener(new InputListener(){
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                game.setScreen(new MenuScreen(game));
+                return true;
+            }
+        });
+        stagepause.addActor(buttonmenu);
     }
 
     public void addlabels() {
-        label1Style = new Label.LabelStyle();
+        label1Style1 = new Label.LabelStyle();
         myFont = new BitmapFont(Gdx.files.internal("font.fnt"));
-        label1Style.font = myFont;
-        label1Style.fontColor = Color.BLUE;
+        label1Style1.font = myFont;
+        label1Style1.fontColor = Color.BLUE;
+
+        label1Style2 = new Label.LabelStyle();
+        myFont = new BitmapFont(Gdx.files.internal("font.fnt"));
+        label1Style2.font = myFont;
+        label1Style2.fontColor = Color.RED;
+
+        label1Style3 = new Label.LabelStyle();
+        myFont = new BitmapFont(Gdx.files.internal("font.fnt"));
+        label1Style3.font = myFont;
+        label1Style3.fontColor = Color.GREEN;
 
         //character
-        labelhpchar = new Label(String.valueOf(character.getHp()), label1Style);
+        labelhpchar = new Label(String.valueOf(character.getHp()), label1Style1);
         labelhpchar.setSize(50, 30);
         labelhpchar.setPosition(WIDTH / 20 + btn_size1 / 3, HEIGHT - (HEIGHT / 6));
         labelhpchar.setAlignment(Align.center);
         stage.addActor(labelhpchar);
 
-        labelgoldchar = new Label(String.valueOf(character.getGold()), label1Style);
+        labelhpchardif = new Label("-" + String.valueOf(hpdifchar), label1Style2);
+        labelhpchardif.setSize(50, 30);
+        labelhpchardif.setPosition(WIDTH / 20 + btn_size1 / 3, HEIGHT - (HEIGHT / 8));
+        labelhpchardif.setAlignment(Align.center);
+        stage.addActor(labelhpchardif);
+
+        labelgoldchar = new Label(String.valueOf(character.getGold()), label1Style1);
         labelgoldchar.setSize(50, 30);
         labelgoldchar.setPosition(WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3,HEIGHT - (HEIGHT / 6));
         labelgoldchar.setAlignment(Align.center);
         stage.addActor(labelgoldchar);
 
-        labelincchar = new Label(String.valueOf(character.getInc()), label1Style);
+        labelgoldchardif = new Label("+" + String.valueOf(golddifchar), label1Style3);
+        labelgoldchardif.setSize(50, 30);
+        labelgoldchardif.setPosition(WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3,HEIGHT - (HEIGHT / 8));
+        labelgoldchardif.setAlignment(Align.center);
+        stage.addActor(labelgoldchardif);
+
+        labelincchar = new Label(String.valueOf(character.getInc()), label1Style1);
         labelincchar.setSize(50, 30);
         labelincchar.setPosition(WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3,HEIGHT - (HEIGHT / 6));
         labelincchar.setAlignment(Align.center);
         stage.addActor(labelincchar);
 
-        labelatkchar = new Label(String.valueOf(character.getAtk()), label1Style);
+        labelatkchar = new Label(String.valueOf(character.getAtk()), label1Style1);
         labelatkchar.setSize(50, 30);
         labelatkchar.setPosition(WIDTH / 4 + btn_size1 * 5 / 2 + 30, HEIGHT / 4 * 3 + btn_size1 / 2);
         labelatkchar.setAlignment(Align.center);
         stage.addActor(labelatkchar);
 
-        labeldefchar = new Label(String.valueOf(character.getDef()), label1Style);
+        labeldefchar = new Label(String.valueOf(character.getDef()), label1Style1);
         labeldefchar.setSize(50, 30);
         labeldefchar.setPosition(WIDTH / 4 + btn_size1 + 30, HEIGHT / 4 * 3 + btn_size1 / 2);
         labeldefchar.setAlignment(Align.center);
@@ -875,35 +874,63 @@ public class GameScreen extends ScreenAdapter {
 
 
         //enemy
-        labelhpen = new Label(String.valueOf(enemy.getHp()), label1Style);
+        labelhpen = new Label(String.valueOf(enemy.getHp()), label1Style1);
         labelhpen.setSize(50, 30);
         labelhpen.setPosition(WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40, HEIGHT - (HEIGHT / 6));
         labelhpen.setAlignment(Align.center);
         stage.addActor(labelhpen);
 
-        labelgolden = new Label(String.valueOf(enemy.getGold()), label1Style);
+        labelhpendif = new Label("-" + String.valueOf(hpdifen), label1Style2);
+        labelhpendif.setSize(50, 30);
+        labelhpendif.setPosition(WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40, HEIGHT - (HEIGHT / 8));
+        labelhpendif.setAlignment(Align.center);
+        stage.addActor(labelhpendif);
+
+        labelgolden = new Label(String.valueOf(enemy.getGold()), label1Style1);
         labelgolden.setSize(50, 30);
         labelgolden.setPosition(WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40,HEIGHT - (HEIGHT / 6));
         labelgolden.setAlignment(Align.center);
         stage.addActor(labelgolden);
 
-        labelincen = new Label(String.valueOf(enemy.getInc()), label1Style);
+        labelgoldendif = new Label("+" + String.valueOf(golddifen), label1Style3);
+        labelgoldendif.setSize(50, 30);
+        labelgoldendif.setPosition(WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40,HEIGHT - (HEIGHT / 8));
+        labelgoldendif.setAlignment(Align.center);
+        stage.addActor(labelgoldendif);
+
+        labelincen = new Label(String.valueOf(enemy.getInc()), label1Style1);
         labelincen.setSize(50, 30);
         labelincen.setPosition(WIDTH - (WIDTH / 20 + btn_size1 / 3) - 50 + 40,HEIGHT - (HEIGHT / 6));
         labelincen.setAlignment(Align.center);
         stage.addActor(labelincen);
 
-        labelatken = new Label(String.valueOf(enemy.getAtk()), label1Style);
+        labelatken = new Label(String.valueOf(enemy.getAtk()), label1Style1);
         labelatken.setSize(50, 30);
         labelatken.setPosition(WIDTH - (WIDTH / 4 + btn_size1 * 5 / 2) - btn_size1 + 30,HEIGHT / 4 * 3 + btn_size1 / 2);
         labelatken.setAlignment(Align.center);
         stage.addActor(labelatken);
 
-        labeldefen = new Label(String.valueOf(enemy.getDef()), label1Style);
+        labeldefen = new Label(String.valueOf(enemy.getDef()), label1Style1);
         labeldefen.setSize(50, 30);
         labeldefen.setPosition(WIDTH - (WIDTH / 4 + btn_size1) - btn_size1 + 30,HEIGHT / 4 * 3 + btn_size1 / 2);
         labeldefen.setAlignment(Align.center);
         stage.addActor(labeldefen);
+
+
+        //round
+        labelround = new Label("round" + String.valueOf(round), label1Style1);
+        labelround.setSize(50, 30);
+        labelround.setPosition(WIDTH / 2 - 50 / 2,HEIGHT - btn_size1 * 3 / 2);
+        labelround.setAlignment(Align.center);
+        stage.addActor(labelround);
+
+
+        //enemy about
+        labelenemyabout1 = new Label("medyak" + "\n" + "\n" + "ychebnui paca" + "\n" + "smotri ne proigrai emy", label1Style1);
+        labelenemyabout1.setSize(50, 30);
+        labelenemyabout1.setPosition(WIDTH / 2 - btn_size1 * 3, HEIGHT - (HEIGHT / 6));
+        labelenemyabout1.setAlignment(Align.left);
+        stagepause.addActor(labelenemyabout1);
     }
 
     public void update (float deltaTime) {
@@ -928,7 +955,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         if (!buttondisable) {
-            if ((character.getGold() < 10) && (buttonincup.isChecked() == false)) {
+            if (((character.getGold() < character.getIncupcost()) && (buttonincup.isChecked() == false)) || (buttonatkup.isChecked() && buttondefup.isChecked())) {
                 buttonincup.setTouchable(Touchable.disabled);
             } else {
                 buttonincup.setTouchable(Touchable.enabled);
@@ -936,7 +963,7 @@ public class GameScreen extends ScreenAdapter {
         }
 
         if (!buttondisable) {
-            if ((character.getGold() < 10) && (buttonatkup.isChecked() == false)) {
+            if (((character.getGold() < character.getAtkupcost()) && (buttonatkup.isChecked() == false)) || (buttonincup.isChecked() && buttondefup.isChecked())) {
                 buttonatkup.setTouchable(Touchable.disabled);
             } else {
                 buttonatkup.setTouchable(Touchable.enabled);
@@ -944,7 +971,7 @@ public class GameScreen extends ScreenAdapter {
         }
 
         if (!buttondisable) {
-            if ((character.getGold() < 10) && (buttondefup.isChecked() == false)) {
+            if (((character.getGold() < character.getDefupcost()) && (buttondefup.isChecked() == false)) || (buttonincup.isChecked() && buttonatkup.isChecked())) {
                 buttondefup.setTouchable(Touchable.disabled);
             } else {
                 buttondefup.setTouchable(Touchable.enabled);
@@ -953,7 +980,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         if (!buttondisable) {
-            if ((character.getGold() < 15) && (buttonaddatkchar.isChecked() == false)) {
+            if ((character.getGold() < character.getAtkaddcost()) && (buttonaddatkchar.isChecked() == false)) {
                 buttonaddatkchar.setTouchable(Touchable.disabled);
             } else {
                 buttonaddatkchar.setTouchable(Touchable.enabled);
@@ -969,7 +996,7 @@ public class GameScreen extends ScreenAdapter {
 
 
         if (!buttondisable) {
-            if ((character.getGold() < 15) && (buttonadddefchar.isChecked() == false)) {
+            if ((character.getGold() < character.getDefaddcost()) && (buttonadddefchar.isChecked() == false)) {
                 buttonadddefchar.setTouchable(Touchable.disabled);
             } else {
                 buttonadddefchar.setTouchable(Touchable.enabled);
@@ -981,6 +1008,34 @@ public class GameScreen extends ScreenAdapter {
         }
         else {
             buttonGroup2.setMaxCheckCount(1);
+        }
+
+        if ((!buttonfight.isChecked()) || (hpdifchar == 0)) {
+            labelhpchardif.setVisible(false);
+        }
+        else {
+            labelhpchardif.setVisible(true);
+        }
+
+        if ((!buttonfight.isChecked()) || (golddifchar == 0)) {
+            labelgoldchardif.setVisible(false);
+        }
+        else {
+            labelgoldchardif.setVisible(true);
+        }
+
+        if ((!buttonfight.isChecked()) || (hpdifen == 0)) {
+            labelhpendif.setVisible(false);
+        }
+        else {
+            labelhpendif.setVisible(true);
+        }
+
+        if ((!buttonfight.isChecked()) || (golddifen == 0)) {
+            labelgoldendif.setVisible(false);
+        }
+        else {
+            labelgoldendif.setVisible(true);
         }
     }
 
@@ -996,30 +1051,59 @@ public class GameScreen extends ScreenAdapter {
         game.batch.draw(Assets.backgroundRegionlvl1, 0, 0, WIDTH, HEIGHT);
         game.batch.end();
 
-        game.batch.enableBlending();
-        game.batch.begin();
+        if (state == 1) {
+            game.batch.enableBlending();
+            game.batch.begin();
 
-        game.batch.draw(Assets.hpicon, WIDTH / 20 + btn_size1 / 3 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
-        game.batch.draw(Assets.hpicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.hpicon, WIDTH / 20 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.hpicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
 
-        game.batch.draw(Assets.goldicon, WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
-        game.batch.draw(Assets.goldicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.goldicon, WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.goldicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
 
-        game.batch.draw(Assets.incicon, WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
-        game.batch.draw(Assets.incicon, WIDTH - (WIDTH / 20 + btn_size1 / 3) - 50 + 40 - 35 , HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.incicon, WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+            game.batch.draw(Assets.incicon, WIDTH - (WIDTH / 20 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
 
-        game.batch.draw(Assets.atkicon, WIDTH / 4 + btn_size1 * 5 / 2 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-        game.batch.draw(Assets.atkicon, WIDTH - (WIDTH / 4 + btn_size1 * 5 / 2) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+            game.batch.draw(Assets.atkicon, WIDTH / 4 + btn_size1 * 5 / 2 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+            game.batch.draw(Assets.atkicon, WIDTH - (WIDTH / 4 + btn_size1 * 5 / 2) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
 
-        game.batch.draw(Assets.deficon, WIDTH / 4 + btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-        game.batch.draw(Assets.deficon, WIDTH - (WIDTH / 4 + btn_size1) - btn_size1 - 5 , HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+            game.batch.draw(Assets.deficon, WIDTH / 4 + btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+            game.batch.draw(Assets.deficon, WIDTH - (WIDTH / 4 + btn_size1) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
 
-        game.batch.draw(Assets.character, WIDTH / 13 , HEIGHT / 2 - 40, 180, 240);
+            if (character.getDef() < 20) {
+                game.batch.draw(Assets.character1, WIDTH / 13 - 30, HEIGHT / 2 - 40, 180, 192);
+            }
+            if ((character.getDef() < 40) && (character.getDef() >= 20)) {
+                game.batch.draw(Assets.character2, WIDTH / 13 - 30, HEIGHT / 2 - 40, 180, 240);
+            }
+            if (character.getDef() >= 40) {
+                game.batch.draw(Assets.character3, WIDTH / 13 - 30, HEIGHT / 2 - 40, 180, 240);
+            }
 
-        if (levelnum == 1) {
-            game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 , HEIGHT / 2 - 40, 200, 250);
+            if (character.getAtk() < 30) {
+                game.batch.draw(Assets.charweapon1, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 168, 1, 1, -70);
+            }
+            if ((character.getAtk() < 60) && (character.getAtk() >= 30)) {
+                game.batch.draw(Assets.charweapon2, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 160, 1, 1, -70);
+            }
+            if (character.getAtk() >= 90) {
+                game.batch.draw(Assets.charweapon3, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 70, 203, 1, 1, -70);
+            }
+
+            if (levelnum == 1) {
+                game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 200, 250);
+            }
+            game.batch.end();
         }
-        game.batch.end();
+        else {
+            game.batch.enableBlending();
+            game.batch.begin();
+            game.batch.draw(Assets.backgroundRegion, WIDTH / 3, HEIGHT / 3, WIDTH / 3, HEIGHT / 2 + btn_size2);
+            if (levelnum == 1) {
+                game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 200, 250);
+            }
+            game.batch.end();
+        }
     }
 
     @Override
@@ -1027,25 +1111,46 @@ public class GameScreen extends ScreenAdapter {
         update(delta);
         draw();
 
-        labelhpchar.setText(String.valueOf(character.getHp()));
-        labelgoldchar.setText(String.valueOf(character.getGold()));
-        labelincchar.setText(String.valueOf(character.getInc()));
-        labelatkchar.setText(String.valueOf(character.getAtk()));
-        labeldefchar.setText(String.valueOf(character.getDef()));
+        if (state == 1) {
+            labelhpchar.setText(String.valueOf(character.getHp()));
+            labelhpchardif.setText("-" + String.valueOf(hpdifchar));
+            labelgoldchar.setText(String.valueOf(character.getGold()));
+            labelgoldchardif.setText("+" + String.valueOf(golddifchar));
+            labelincchar.setText(String.valueOf(character.getInc()));
+            labelatkchar.setText(String.valueOf(character.getAtk()));
+            labeldefchar.setText(String.valueOf(character.getDef()));
 
 
-        labelhpen.setText(String.valueOf(enemy.getHp()));
-        labelgolden.setText(String.valueOf(enemy.getGold()));
-        labelincen.setText(String.valueOf(enemy.getInc()));
-        labelatken.setText(String.valueOf(enemy.getAtk()));
-        labeldefen.setText(String.valueOf(enemy.getDef()));
+            labelhpen.setText(String.valueOf(enemy.getHp()));
+            labelhpendif.setText("-" + String.valueOf(hpdifen));
+            labelgolden.setText(String.valueOf(enemy.getGold()));
+            labelgoldendif.setText("+" + String.valueOf(golddifen));
+            labelincen.setText(String.valueOf(enemy.getInc()));
+            labelatken.setText(String.valueOf(enemy.getAtk()));
+            labeldefen.setText(String.valueOf(enemy.getDef()));
 
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+            labelround.setText("round" + String.valueOf(round));
+
+            stage.act(Gdx.graphics.getDeltaTime());
+            stage.draw();
+        }
+        else {
+            stagepause.act(Gdx.graphics.getDeltaTime());
+            stagepause.draw();
+        }
     }
 
     @Override
     public void pause() {
+        state = 0;
+        Gdx.input.setInputProcessor(stagepause);
+    }
+
+    public void resume() {
+        if(state == 0) {
+            state = 1;
+            Gdx.input.setInputProcessor(stage);
+        }
     }
 
     @Override
@@ -1053,11 +1158,13 @@ public class GameScreen extends ScreenAdapter {
         camera.setToOrtho(false, WIDTH, HEIGHT);
         camera.update();
         stage.getViewport().update(width, height, true);
+        stagepause.getViewport().update(width, height, true);
     }
 
     @Override
     public void hide() {
         stage.dispose();
+        stagepause.dispose();
         mySkin.dispose();
         myFont.dispose();
     }
