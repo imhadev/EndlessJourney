@@ -162,7 +162,7 @@ public class gamechar {
 
         if (enemy.getInc() < (enemy.getAtkupcost() + enemy.getDefupcost() + enemy.getAtkaddcost() + enemy.getDefaddcost())) {
 
-            if (round > 6) {
+            if (round > 8) {
                 upnum1 = rand.nextInt(3) + 1;
                 boolean enemyupcase = false;
                 while (enemyupcase == false) {
