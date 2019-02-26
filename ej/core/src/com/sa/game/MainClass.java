@@ -33,7 +33,13 @@ public class MainClass extends Game {
 		batch.dispose();
 
 		Assets.background.dispose();
+		Assets.background1.dispose();
 		Assets.backgroundlvl1.dispose();
+		Assets.backgroundlvl2.dispose();
+		Assets.backgroundlvl3.dispose();
+		Assets.backgroundlvl4.dispose();
+		Assets.backgroundlvl5.dispose();
+		Assets.backgroundlvlmid.dispose();
 		Assets.items.dispose();
 		Assets.gui.dispose();
 		Assets.characters.dispose();

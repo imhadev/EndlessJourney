@@ -41,10 +41,14 @@ public class GameScreen extends ScreenAdapter {
     //game
     private int state;
     private int beforefight = 1;
-    private Group pauseGroup;
+    private int fightend = 0;
 
     private int levelnum;
     private int round;
+    private int dialogue1 = 1;
+    private int dialogue2 = 1;
+    private int dialogue1max;
+    private int dialogue2max;
 
     private boolean buttondisable = false;
 
@@ -102,6 +106,7 @@ public class GameScreen extends ScreenAdapter {
     private Button buttonpause;
     private Button buttonresume;
     private Button buttonmenu;
+    private Button buttonnext;
 
     private ButtonGroup buttonGroup1;
     private ButtonGroup buttonGroup2;
@@ -126,6 +131,8 @@ public class GameScreen extends ScreenAdapter {
     private Label labelatken;
     private Label labeldefen;
 
+    private Label labelstory1;
+    private Label labelstory2;
     private Label labelround;
     private Label labelenemyabout1;
 
@@ -140,12 +147,15 @@ public class GameScreen extends ScreenAdapter {
     private int btn_size1 = WIDTH / 20;
     private int btn_size2 = WIDTH / 14;
 
-    public GameScreen(MainClass game, int levelnum, int atk, int def) {
+    public GameScreen(MainClass game, int levelnum, int atk, int def, int dialogue1max, int dialogue2max) {
 
-        state = 0;
+        state = 2;
 
         this.game = game;
         this.levelnum = levelnum;
+
+        this.dialogue1max = dialogue1max;
+        this.dialogue2max = dialogue2max;
 
         camera = new OrthographicCamera();
         camera.position.set(WIDTH / 2, HEIGHT / 2, 0);
@@ -749,7 +759,9 @@ public class GameScreen extends ScreenAdapter {
                         if (levelnum == 2) {
                             game.setScreen(new GameOverScreen(game, 1));
                         } else {
-                            game.setScreen(new GameScreen(game, levelnum + 1, character.getAtk() / 4, character.getDef() / 4));
+                            fightend = 1;
+                            dialogue2 = 2;
+                            state = 2;
                         }
                     }
                 }
@@ -790,7 +802,7 @@ public class GameScreen extends ScreenAdapter {
 
         buttonmenu = new TextButton("menu", mySkin);
         buttonmenu.setSize(btn_size2 * 3 / 2, btn_size2 * 2 / 3);
-        buttonmenu.setPosition(WIDTH / 2 - btn_size2 * 3 / 4, HEIGHT / 5);
+        buttonmenu.setPosition(WIDTH / 20, HEIGHT / 15);
         buttonmenu.addListener(new InputListener(){
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -802,6 +814,30 @@ public class GameScreen extends ScreenAdapter {
             }
         });
         stagepause.addActor(buttonmenu);
+
+        buttonnext = new TextButton("next", mySkin);
+        buttonnext.setSize(btn_size2 * 3 / 2, btn_size2 * 2 / 3);
+        buttonnext.setPosition(WIDTH  - WIDTH / 20 - btn_size2 * 3 / 2, HEIGHT / 15);
+        buttonnext.addListener(new ChangeListener(){
+            public void changed (ChangeEvent event, Actor actor) {
+                if (dialogue1 < dialogue1max) {
+                    dialogue1++;
+                }
+                if (dialogue1 == dialogue1max) {
+                    dialogue1 = dialogue1max + 1;
+                    pause();
+                }
+                if (dialogue1 == dialogue1max + 1) {
+                    dialogue2++;
+                }
+                if (dialogue2 == dialogue2max) {
+                    if (levelnum == 1) {
+                        game.setScreen(new GameScreen(game, levelnum + 1, character.getAtk() / 4, character.getDef() / 4, 3, 4));
+                    }
+                }
+            }
+        });
+        stagepause.addActor(buttonnext);
     }
 
     public void addlabels() {
@@ -917,8 +953,20 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(labelround);
 
 
+        //story
+        labelstory1 = new Label("", label1Style1);
+        labelstory1.setSize(50, 30);
+        labelstory1.setAlignment(Align.left);
+        stagepause.addActor(labelstory1);
+
+        labelstory2 = new Label("", label1Style1);
+        labelstory2.setSize(50, 30);
+        labelstory2.setAlignment(Align.left);
+        stagepause.addActor(labelstory2);
+
+
         //enemy about
-        labelenemyabout1 = new Label("medyak" + "\n" + "\n" + "ychebnui paca" + "\n" + "smotri ne proigrai emy", label1Style1);
+        labelenemyabout1 = new Label("", label1Style1);
         labelenemyabout1.setSize(50, 30);
         labelenemyabout1.setPosition(WIDTH / 2 - btn_size1 * 3, HEIGHT - (HEIGHT / 6));
         labelenemyabout1.setAlignment(Align.left);
@@ -952,136 +1000,249 @@ public class GameScreen extends ScreenAdapter {
     }
 
     public void update (float deltaTime) {
-        if (!buttondisable) {
-            buttonatk1.setTouchable(Touchable.enabled);
-        }
-        if (!buttondisable) {
-            buttonatk2.setTouchable(Touchable.enabled);
-        }
-        if (!buttondisable) {
-            buttonatk3.setTouchable(Touchable.enabled);
-        }
-        if (!buttondisable) {
-            buttondef1.setTouchable(Touchable.enabled);
-        }
-        if (!buttondisable) {
-            buttondef2.setTouchable(Touchable.enabled);
-        }
-        if (!buttondisable) {
-            buttondef3.setTouchable(Touchable.enabled);
-        }
+        if (state == 1) {
+            if (!buttondisable) {
+                buttonatk1.setTouchable(Touchable.enabled);
+            }
+            if (!buttondisable) {
+                buttonatk2.setTouchable(Touchable.enabled);
+            }
+            if (!buttondisable) {
+                buttonatk3.setTouchable(Touchable.enabled);
+            }
+            if (!buttondisable) {
+                buttondef1.setTouchable(Touchable.enabled);
+            }
+            if (!buttondisable) {
+                buttondef2.setTouchable(Touchable.enabled);
+            }
+            if (!buttondisable) {
+                buttondef3.setTouchable(Touchable.enabled);
+            }
 
 
-        if (!buttondisable) {
-            if (((character.getGold() < character.getIncupcost()) && (buttonincup.isChecked() == false)) || (buttonatkup.isChecked() && buttondefup.isChecked())) {
-                buttonincup.setTouchable(Touchable.disabled);
-            } else {
-                buttonincup.setTouchable(Touchable.enabled);
+            if (!buttondisable) {
+                if (((character.getGold() < character.getIncupcost()) && (buttonincup.isChecked() == false)) || (buttonatkup.isChecked() && buttondefup.isChecked())) {
+                    buttonincup.setTouchable(Touchable.disabled);
+                } else {
+                    buttonincup.setTouchable(Touchable.enabled);
+                }
+            }
+
+            if (!buttondisable) {
+                if (((character.getGold() < character.getAtkupcost()) && (buttonatkup.isChecked() == false)) || (buttonincup.isChecked() && buttondefup.isChecked())) {
+                    buttonatkup.setTouchable(Touchable.disabled);
+                } else {
+                    buttonatkup.setTouchable(Touchable.enabled);
+                }
+            }
+
+            if (!buttondisable) {
+                if (((character.getGold() < character.getDefupcost()) && (buttondefup.isChecked() == false)) || (buttonincup.isChecked() && buttonatkup.isChecked())) {
+                    buttondefup.setTouchable(Touchable.disabled);
+                } else {
+                    buttondefup.setTouchable(Touchable.enabled);
+                }
+            }
+
+
+            if (!buttondisable) {
+                if ((character.getGold() < character.getAtkaddcost()) && (buttonaddatkchar.isChecked() == false)) {
+                    buttonaddatkchar.setTouchable(Touchable.disabled);
+                } else {
+                    buttonaddatkchar.setTouchable(Touchable.enabled);
+                }
+            }
+
+            if (buttonaddatkchar.isChecked()) {
+                buttonGroup1.setMaxCheckCount(2);
+            }
+            else {
+                buttonGroup1.setMaxCheckCount(1);
+            }
+
+
+            if (!buttondisable) {
+                if ((character.getGold() < character.getDefaddcost()) && (buttonadddefchar.isChecked() == false)) {
+                    buttonadddefchar.setTouchable(Touchable.disabled);
+                } else {
+                    buttonadddefchar.setTouchable(Touchable.enabled);
+                }
+            }
+
+            if (buttonadddefchar.isChecked()) {
+                buttonGroup2.setMaxCheckCount(2);
+            }
+            else {
+                buttonGroup2.setMaxCheckCount(1);
+            }
+
+            if ((!buttonfight.isChecked()) || (hpdifchar == 0)) {
+                labelhpchardif.setVisible(false);
+            }
+            else {
+                labelhpchardif.setVisible(true);
+            }
+
+            if ((!buttonfight.isChecked()) || (golddifchar == 0)) {
+                labelgoldchardif.setVisible(false);
+            }
+            else {
+                labelgoldchardif.setVisible(true);
+            }
+
+            if ((!buttonfight.isChecked()) || (hpdifen == 0) || (immune == 1)) {
+                labelhpendif.setVisible(false);
+            }
+            else {
+                labelhpendif.setVisible(true);
+            }
+
+            if ((!buttonfight.isChecked()) || (golddifen == 0)) {
+                labelgoldendif.setVisible(false);
+            }
+            else {
+                labelgoldendif.setVisible(true);
+            }
+
+            if (enemyactions[12] == 1 && buttonfight.isChecked()) {
+                labelbonusinc.setVisible(true);
+            }
+            else {
+                labelbonusinc.setVisible(false);
+            }
+
+            if (enemyactions[12] == 2 && buttonfight.isChecked()) {
+                labelbonusatk.setVisible(true);
+            }
+            else {
+                labelbonusatk.setVisible(false);
+            }
+
+            if (enemyactions[12] == 3 && buttonfight.isChecked()) {
+                labelbonusdef.setVisible(true);
+            }
+            else {
+                labelbonusdef.setVisible(false);
+            }
+
+            if (immune == 1 && buttonfight.isChecked()) {
+                labelimmune.setVisible(true);
+            }
+            else {
+                labelimmune.setVisible(false);
             }
         }
+        else {
+            Gdx.input.setInputProcessor(stagepause);
+            if (state == 2) {
+                //lvl1
+                if (levelnum == 1) {
+                    //prestory
+                    if (dialogue1 == 1) {
+                        labelstory1.setText("rjulf-nj lfdyj" + "\n" +
+                                "yf Ptvkt ;bkb ldt hfcs^" + "\n" +
+                                "vjycnhs b k.lb/ Yj jlyf;ls" + "\n" +
+                                "vt;le ybvb dcgs[yekf djqyf?" + "\n" + "\n" +
+                                "gj,tle d rjnjhjq jlth;fkb" + "\n" +
+                                "gjcktlybt/ Ctvm dtkbxfqib[" + "\n" +
+                                "xtkjdtxtcrb[ vfujd pfgtxfnfkb" + "\n" +
+                                "vjycnhjd gjl ptvk`q c gjvjom.");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                    }
+                    if (dialogue1 == 2) {
+                        labelstory1.setText("oi a ya ne pomenyal raskladky" + "\n" + "\n" +
+                                "ladno davaika eshe raz" + "\n" +
+                                "rasskazhy zachem tebe" + "\n" +
+                                "drat`sya s etimi monstra..." + "\n" + "\n" +
+                                "ei a eto kto?" + "\n");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                    }
 
-        if (!buttondisable) {
-            if (((character.getGold() < character.getAtkupcost()) && (buttonatkup.isChecked() == false)) || (buttonincup.isChecked() && buttondefup.isChecked())) {
-                buttonatkup.setTouchable(Touchable.disabled);
-            } else {
-                buttonatkup.setTouchable(Touchable.enabled);
+                    //afterstory
+                    if (dialogue2 == 2) {
+                        labelstory1.setText("pohozhe pered tem kak" + "\n" +
+                                "tu yspel nanesti poslednii" + "\n" +
+                                "ydar medyak kyvurknylsya" + "\n" +
+                                "i ischez" + "\n" + "\n" +
+                                "ny da ladno" + "\n" +
+                                "tu neploho postaralsya" + "\n" +
+                                "a teper` pora v pyt`" + "\n");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                    }
+                }
+
+                //lvl2
+                if (levelnum == 2) {
+                    if (dialogue1 == 1) {
+                        labelstory1.setText("mne kazhetsya 4to posle" + "\n" +
+                                "dolgih stranstvvii tu oslab" + "\n" + "\n" +
+                                "na glaz ya bu skazal chto" + "\n" +
+                                "primerno raza tak v 4");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4) + 20);
+                    }
+                    if (dialogue1 == 2) {
+                        labelstory2.setText("no ne beda y menya gde-to bulo" + "\n" +
+                                "zel`e kotoroe vernet tebe sil..." + "\n" + "\n" +
+                                "stoi tu tozhe eto slushal!?");
+                        labelstory2.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 3) - 70);
+                    }
+
+                    //afterstory
+                    if (dialogue2 == 2) {
+                        labelstory2.setText("");
+
+                        labelstory1.setText("vay ne dymal chto tu spravishsya" + "\n" + "\n" +
+                                "a ya yzhe vupil zel`e i hotel brosit`sya" + "\n" +
+                                "tebe na pomosh`" + "\n" + "\n" +
+                                "ny nichego vrode tu opyat` vernylsya v formy");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                    }
+
+                    if (dialogue2 == 3) {
+                        labelstory2.setText("");
+
+                        labelstory1.setText("oi a chto eto tam" + "\n" + "\n" +
+                                "yps kazhetsya y tebya propalo" + "\n" +
+                                "5 ataki i 5 broni");
+                        labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                    }
+                }
+
+                labelenemyabout1.setVisible(false);
+                labelstory1.setVisible(true);
+                labelstory2.setVisible(true);
+
+                buttonresume.setVisible(false);
+                buttonnext.setVisible(true);
             }
-        }
+            else {
+                //lvl1 enemy about
+                if (levelnum == 1) {
+                    labelenemyabout1.setText("medyak" + "\n" + "\n" +
+                            "s vidy nichem ne vudelyaetsya" + "\n" +
+                            "smotri ne proigrai emy");
+                    labelenemyabout1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
+                }
 
-        if (!buttondisable) {
-            if (((character.getGold() < character.getDefupcost()) && (buttondefup.isChecked() == false)) || (buttonincup.isChecked() && buttonatkup.isChecked())) {
-                buttondefup.setTouchable(Touchable.disabled);
-            } else {
-                buttondefup.setTouchable(Touchable.enabled);
+                if (levelnum == 2) {
+                    labelenemyabout1.setText("dorfi" + "\n" + "\n" +
+                            "ochen` navorochennui tip lychshe" + "\n" +
+                            "razobrat`sya s nim pobustree" + "\n" + "\n" +
+                            "esli polychaet yron v sledyy`shem" + "\n" +
+                            "raynde y nego immynitet" + "\n" + "\n" +
+                            "cherez raynd mozhet potratit`" + "\n" +
+                            "odno pole zashitu na apgreid");
+                    labelenemyabout1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 3));
+                }
+
+                labelstory1.setVisible(false);
+                labelstory2.setVisible(false);
+                labelenemyabout1.setVisible(true);
+
+                buttonresume.setVisible(true);
+                buttonnext.setVisible(false);
             }
-        }
-
-
-        if (!buttondisable) {
-            if ((character.getGold() < character.getAtkaddcost()) && (buttonaddatkchar.isChecked() == false)) {
-                buttonaddatkchar.setTouchable(Touchable.disabled);
-            } else {
-                buttonaddatkchar.setTouchable(Touchable.enabled);
-            }
-        }
-
-        if (buttonaddatkchar.isChecked()) {
-            buttonGroup1.setMaxCheckCount(2);
-        }
-        else {
-            buttonGroup1.setMaxCheckCount(1);
-        }
-
-
-        if (!buttondisable) {
-            if ((character.getGold() < character.getDefaddcost()) && (buttonadddefchar.isChecked() == false)) {
-                buttonadddefchar.setTouchable(Touchable.disabled);
-            } else {
-                buttonadddefchar.setTouchable(Touchable.enabled);
-            }
-        }
-
-        if (buttonadddefchar.isChecked()) {
-            buttonGroup2.setMaxCheckCount(2);
-        }
-        else {
-            buttonGroup2.setMaxCheckCount(1);
-        }
-
-        if ((!buttonfight.isChecked()) || (hpdifchar == 0)) {
-            labelhpchardif.setVisible(false);
-        }
-        else {
-            labelhpchardif.setVisible(true);
-        }
-
-        if ((!buttonfight.isChecked()) || (golddifchar == 0)) {
-            labelgoldchardif.setVisible(false);
-        }
-        else {
-            labelgoldchardif.setVisible(true);
-        }
-
-        if ((!buttonfight.isChecked()) || (hpdifen == 0) || (immune == 1)) {
-            labelhpendif.setVisible(false);
-        }
-        else {
-            labelhpendif.setVisible(true);
-        }
-
-        if ((!buttonfight.isChecked()) || (golddifen == 0)) {
-            labelgoldendif.setVisible(false);
-        }
-        else {
-            labelgoldendif.setVisible(true);
-        }
-
-        if (enemyactions[12] == 1 && buttonfight.isChecked()) {
-            labelbonusinc.setVisible(true);
-        }
-        else {
-            labelbonusinc.setVisible(false);
-        }
-
-        if (enemyactions[12] == 2 && buttonfight.isChecked()) {
-            labelbonusatk.setVisible(true);
-        }
-        else {
-            labelbonusatk.setVisible(false);
-        }
-
-        if (enemyactions[12] == 3 && buttonfight.isChecked()) {
-            labelbonusdef.setVisible(true);
-        }
-        else {
-            labelbonusdef.setVisible(false);
-        }
-
-        if (immune == 1 && buttonfight.isChecked()) {
-            labelimmune.setVisible(true);
-        }
-        else {
-            labelimmune.setVisible(false);
         }
     }
 
@@ -1092,63 +1253,142 @@ public class GameScreen extends ScreenAdapter {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
-        game.batch.disableBlending();
-        game.batch.begin();
-        game.batch.draw(Assets.backgroundRegionlvl1, 0, 0, WIDTH, HEIGHT);
-        game.batch.end();
+        if (state == 2) {
 
-        if (state == 1) {
+            game.batch.disableBlending();
+            game.batch.begin();
+            if (fightend == 0) {
+                game.batch.draw(Assets.backgroundlvlmid, 0, 0, WIDTH, HEIGHT);
+            }
+            else {
+                if (levelnum == 1) {
+                    game.batch.draw(Assets.backgroundRegionlvl1, 0, 0, WIDTH, HEIGHT);
+                }
+                if (levelnum == 2) {
+                    game.batch.draw(Assets.backgroundRegionlvl2, 0, 0, WIDTH, HEIGHT);
+                }
+            }
+            game.batch.draw(Assets.backgroundRegion, WIDTH / 3 - 100 / 2, HEIGHT / 3, WIDTH / 3 + 100, HEIGHT / 2 + btn_size2);
+            game.batch.end();
+
+
             game.batch.enableBlending();
             game.batch.begin();
-
-            game.batch.draw(Assets.hpicon, WIDTH / 20 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-            game.batch.draw(Assets.hpicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-
-            game.batch.draw(Assets.goldicon, WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-            game.batch.draw(Assets.goldicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-
-            game.batch.draw(Assets.incicon, WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-            game.batch.draw(Assets.incicon, WIDTH - (WIDTH / 20 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
-
-            game.batch.draw(Assets.atkicon, WIDTH / 4 + btn_size1 * 5 / 2 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-            game.batch.draw(Assets.atkicon, WIDTH - (WIDTH / 4 + btn_size1 * 5 / 2) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-
-            game.batch.draw(Assets.deficon, WIDTH / 4 + btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-            game.batch.draw(Assets.deficon, WIDTH - (WIDTH / 4 + btn_size1) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
-
-            if (character.getDef() < 40) {
+            if (character.getDef() / 4 < 40) {
                 game.batch.draw(Assets.character1, WIDTH / 13 - 30, HEIGHT / 2 - 40, 180, 192);
             }
-            if ((character.getDef() < 80) && (character.getDef() >= 40)) {
+            if ((character.getDef() / 4 < 80) && (character.getDef() / 4 >= 40)) {
                 game.batch.draw(Assets.character2, WIDTH / 13 - 35, HEIGHT / 2 - 40, 180, 240);
             }
-            if (character.getDef() >= 80) {
+            if (character.getDef() / 4 >= 80) {
                 game.batch.draw(Assets.character3, WIDTH / 13 - 35, HEIGHT / 2 - 40, 180, 240);
             }
 
-            if (character.getAtk() < 60) {
+            if (character.getAtk() / 4 < 60) {
                 game.batch.draw(Assets.charweapon1, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 168, 1, 1, -70);
             }
-            if ((character.getAtk() < 120) && (character.getAtk() >= 60)) {
+            if ((character.getAtk() / 4 < 120) && (character.getAtk() / 4 >= 60)) {
                 game.batch.draw(Assets.charweapon2, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 160, 1, 1, -70);
             }
-            if (character.getAtk() >= 120) {
+            if (character.getAtk() / 4 >= 120) {
                 game.batch.draw(Assets.charweapon3, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 70, 203, 1, 1, -70);
             }
-
-            if (levelnum == 1) {
-                game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 200, 250);
-            }
             game.batch.end();
+
         }
         else {
-            game.batch.enableBlending();
-            game.batch.begin();
-            game.batch.draw(Assets.backgroundRegion, WIDTH / 3, HEIGHT / 3, WIDTH / 3, HEIGHT / 2 + btn_size2);
-            if (levelnum == 1) {
-                game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 200, 250);
+            if (state == 1) {
+                if (levelnum == 1) {
+                    game.batch.disableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegionlvl1, 0, 0, WIDTH, HEIGHT);
+                    game.batch.end();
+
+                    game.batch.enableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 150, 240);
+                    game.batch.end();
+                }
+
+                if (levelnum == 2) {
+                    game.batch.disableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegionlvl2, 0, 0, WIDTH, HEIGHT);
+                    game.batch.end();
+
+                    game.batch.enableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.enemylvl2, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 150, 240);
+                    game.batch.end();
+                }
+
+                game.batch.enableBlending();
+                game.batch.begin();
+
+                game.batch.draw(Assets.hpicon, WIDTH / 20 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+                game.batch.draw(Assets.hpicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+
+                game.batch.draw(Assets.goldicon, WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+                game.batch.draw(Assets.goldicon, WIDTH - (WIDTH / 20 + btn_size1 * 3 / 2 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+
+                game.batch.draw(Assets.incicon, WIDTH / 20 + btn_size1 * 3 + btn_size1 / 3 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+                game.batch.draw(Assets.incicon, WIDTH - (WIDTH / 20 + btn_size1 / 3) - 50 + 40 - 35, HEIGHT - (HEIGHT / 6), 32, 32);
+
+                game.batch.draw(Assets.atkicon, WIDTH / 4 + btn_size1 * 5 / 2 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+                game.batch.draw(Assets.atkicon, WIDTH - (WIDTH / 4 + btn_size1 * 5 / 2) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+
+                game.batch.draw(Assets.deficon, WIDTH / 4 + btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+                game.batch.draw(Assets.deficon, WIDTH - (WIDTH / 4 + btn_size1) - btn_size1 - 5, HEIGHT / 4 * 3 + btn_size1 / 2 - 1, 32, 32);
+
+
+                if (character.getDef() / 4 < 40) {
+                    game.batch.draw(Assets.character1, WIDTH / 13 - 30, HEIGHT / 2 - 40, 180, 192);
+                }
+                if ((character.getDef() / 4 < 80) && (character.getDef() / 4 >= 40)) {
+                    game.batch.draw(Assets.character2, WIDTH / 13 - 35, HEIGHT / 2 - 40, 180, 240);
+                }
+                if (character.getDef() / 4 >= 80) {
+                    game.batch.draw(Assets.character3, WIDTH / 13 - 35, HEIGHT / 2 - 40, 180, 240);
+                }
+
+                if (character.getAtk() / 4 < 60) {
+                    game.batch.draw(Assets.charweapon1, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 168, 1, 1, -70);
+                }
+                if ((character.getAtk() / 4 < 120) && (character.getAtk() / 4 >= 60)) {
+                    game.batch.draw(Assets.charweapon2, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 64, 160, 1, 1, -70);
+                }
+                if (character.getAtk() / 4 >= 120) {
+                    game.batch.draw(Assets.charweapon3, WIDTH / 13 + 50, HEIGHT / 2 + 25, 0, 0, 70, 203, 1, 1, -70);
+                }
+                game.batch.end();
             }
-            game.batch.end();
+            else {
+                if (levelnum == 1) {
+                    game.batch.disableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegionlvl1, 0, 0, WIDTH, HEIGHT);
+                    game.batch.end();
+
+                    game.batch.enableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegion, WIDTH / 3 - 100 / 2, HEIGHT / 3, WIDTH / 3 + 100, HEIGHT / 2 + btn_size2);
+                    game.batch.draw(Assets.enemylvl1, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 150, 240);
+                    game.batch.end();
+                }
+
+                if (levelnum == 2) {
+                    game.batch.disableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegionlvl2, 0, 0, WIDTH, HEIGHT);
+                    game.batch.end();
+
+                    game.batch.enableBlending();
+                    game.batch.begin();
+                    game.batch.draw(Assets.backgroundRegion, WIDTH / 3 - 100 / 2, HEIGHT / 3, WIDTH / 3 + 100, HEIGHT / 2 + btn_size2);
+                    game.batch.draw(Assets.enemylvl2, WIDTH - (WIDTH / 13) - 200 + 30, HEIGHT / 2 - 40, 150, 240);
+                    game.batch.end();
+                }
+            }
         }
     }
 
@@ -1189,11 +1429,10 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void pause() {
         state = 0;
-        Gdx.input.setInputProcessor(stagepause);
     }
 
     public void resume() {
-        if(state == 0) {
+        if (state != 1) {
             state = 1;
             Gdx.input.setInputProcessor(stage);
         }
