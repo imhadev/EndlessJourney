@@ -25,6 +25,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.Random;
+
 import static com.sa.game.MainClass.HEIGHT;
 import static com.sa.game.MainClass.WIDTH;
 
@@ -40,8 +42,12 @@ public class GameScreen extends ScreenAdapter {
 
     //game
     private int state;
+    private static Random rand = new Random();
     private int beforefight = 1;
     private int fightend = 0;
+
+    private int statslvl1 = 0;
+    private int statsbalance;
 
     private int levelnum;
     private int round;
@@ -114,6 +120,7 @@ public class GameScreen extends ScreenAdapter {
     private Label.LabelStyle label1Style1;
     private Label.LabelStyle label1Style2;
     private Label.LabelStyle label1Style3;
+    private Label.LabelStyle label1Style4;
     private BitmapFont myFont;
     private Label labelhpchar;
     private Label labelhpchardif;
@@ -135,6 +142,8 @@ public class GameScreen extends ScreenAdapter {
     private Label labelstory2;
     private Label labelround;
     private Label labelenemyabout1;
+    private Label labelatkcharstory;
+    private Label labeldefcharstory;
 
     private Label labelbonusinc;
     private Label labelbonusatk;
@@ -167,7 +176,7 @@ public class GameScreen extends ScreenAdapter {
         switch(levelnum) {
             case 2: {
                 character = new gamechar(150, 11, 6, atk, def, 13, 16, 12 ,22 ,29, 8, 7, 5, 7);
-                enemy = new gamechar(150, 10, 5, 42, 29, 10, 14, 12 ,22 ,18, 8, 7, 4, 6);
+                enemy = new gamechar(150, 11, 6, 20, 23, 14, 17, 14 ,24 ,31, 10, 8, 6, 7);
                 break;
             }
 
@@ -572,7 +581,7 @@ public class GameScreen extends ScreenAdapter {
                     }
 
                     if (levelnum == 2) {
-                        gamechar.fightlvl2(enemyactions, round, character, enemy, immune, bonusupgrade);
+                        gamechar.fightlvl2(enemyactions, round, character, enemy, immune, bonusupgrade, buttonatkup.isChecked(), buttondefup.isChecked());
                     }
 
                     //fight
@@ -756,13 +765,9 @@ public class GameScreen extends ScreenAdapter {
                         game.setScreen(new GameOverScreen(game, 0));
                     }
                     if ((enemy.getHp() <= 0) && (character.getHp() > 0)) {
-                        if (levelnum == 2) {
-                            game.setScreen(new GameOverScreen(game, 1));
-                        } else {
-                            fightend = 1;
-                            dialogue2 = 2;
-                            state = 2;
-                        }
+                        fightend = 1;
+                        dialogue2 = 2;
+                        state = 2;
                     }
                 }
             }
@@ -832,7 +837,10 @@ public class GameScreen extends ScreenAdapter {
                 }
                 if (dialogue2 == dialogue2max) {
                     if (levelnum == 1) {
-                        game.setScreen(new GameScreen(game, levelnum + 1, character.getAtk() / 4, character.getDef() / 4, 3, 4));
+                        game.setScreen(new GameScreen(game, levelnum + 1, character.getAtk(), character.getDef(), 3, 4));
+                    }
+                    if (levelnum == 2) {
+                        game.setScreen(new GameOverScreen(game, 1));
                     }
                 }
             }
@@ -855,6 +863,11 @@ public class GameScreen extends ScreenAdapter {
         myFont = new BitmapFont(Gdx.files.internal("font.fnt"));
         label1Style3.font = myFont;
         label1Style3.fontColor = Color.GREEN;
+
+        label1Style4 = new Label.LabelStyle();
+        myFont = new BitmapFont(Gdx.files.internal("font.fnt"));
+        label1Style4.font = myFont;
+        label1Style4.fontColor = Color.WHITE;
 
         //character
         labelhpchar = new Label(String.valueOf(character.getHp()), label1Style1);
@@ -963,6 +976,19 @@ public class GameScreen extends ScreenAdapter {
         labelstory2.setSize(50, 30);
         labelstory2.setAlignment(Align.left);
         stagepause.addActor(labelstory2);
+
+        //story stats
+        labelatkcharstory = new Label("atk " + String.valueOf(character.getAtk()), label1Style4);
+        labelatkcharstory.setSize(50, 30);
+        labelatkcharstory.setPosition(WIDTH / 20 + btn_size1 / 3, HEIGHT - (HEIGHT / 6));
+        labelatkcharstory.setAlignment(Align.center);
+        stagepause.addActor(labelatkcharstory);
+
+        labeldefcharstory = new Label("def " + String.valueOf(character.getDef()), label1Style4);
+        labeldefcharstory.setSize(50, 30);
+        labeldefcharstory.setPosition(WIDTH / 20 + btn_size1 * 3, HEIGHT - (HEIGHT / 6));
+        labeldefcharstory.setAlignment(Align.center);
+        stagepause.addActor(labeldefcharstory);
 
 
         //enemy about
@@ -1182,6 +1208,38 @@ public class GameScreen extends ScreenAdapter {
                         labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4) + 20);
                     }
                     if (dialogue1 == 2) {
+                        /*if (statslvl1 == 0) {
+                            character.setDef(character.getDef() / 4);
+                            if (character.getAtk() / 4 >= 48) {
+                                statsbalance = rand.nextInt(3) + 1;
+                                character.setAtk(character.getAtk() / 4 - statsbalance);
+                            }
+                            else {
+                                if (character.getAtk() / 4 < 40) {
+                                    statsbalance = rand.nextInt(3) + 1;
+                                    character.setAtk(character.getAtk() / 4 + statsbalance);
+                                }
+                                else {
+                                    character.setAtk(character.getAtk() / 4);
+                                }
+                            }
+
+                            if (character.getDef() / 4 >= 40) {
+                                statsbalance = rand.nextInt(3) + 1;
+                                character.setDef(character.getDef() / 4 - statsbalance);
+                            }
+                            else {
+                                if (character.getDef() / 4 < 30) {
+                                    statsbalance = rand.nextInt(3) + 1;
+                                    character.setDef(character.getDef() / 4 + statsbalance);
+                                }
+                                else {
+                                    character.setDef(character.getDef() / 4);
+                                }
+                            }
+
+                            statslvl1 = 1;
+                        }*/
                         labelstory2.setText("no ne beda y menya gde-to bulo" + "\n" +
                                 "zel`e kotoroe vernet tebe sil..." + "\n" + "\n" +
                                 "stoi tu tozhe eto slushal!?");
@@ -1193,9 +1251,10 @@ public class GameScreen extends ScreenAdapter {
                         labelstory2.setText("");
 
                         labelstory1.setText("vay ne dymal chto tu spravishsya" + "\n" + "\n" +
-                                "a ya yzhe vupil zel`e i hotel brosit`sya" + "\n" +
-                                "tebe na pomosh`" + "\n" + "\n" +
-                                "ny nichego vrode tu opyat` vernylsya v formy");
+                                "a ya yzhe vupil zel`e i hotel" + "\n" +
+                                "brosit`sya tebe na pomosh`" + "\n" + "\n" +
+                                "ny nichego vrode tu opyat` " + "\n" +
+                                "vernylsya v formy");
                         labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
                     }
 
@@ -1207,6 +1266,11 @@ public class GameScreen extends ScreenAdapter {
                                 "5 ataki i 5 broni");
                         labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4));
                     }
+                }
+
+                if (fightend == 0) {
+                    labelatkcharstory.setVisible(true);
+                    labeldefcharstory.setVisible(true);
                 }
 
                 labelenemyabout1.setVisible(false);
@@ -1236,6 +1300,8 @@ public class GameScreen extends ScreenAdapter {
                     labelenemyabout1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 3));
                 }
 
+                labelatkcharstory.setVisible(false);
+                labeldefcharstory.setVisible(false);
                 labelstory1.setVisible(false);
                 labelstory2.setVisible(false);
                 labelenemyabout1.setVisible(true);
@@ -1421,6 +1487,9 @@ public class GameScreen extends ScreenAdapter {
             stage.draw();
         }
         else {
+            labelatkcharstory.setText("atk " + String.valueOf(character.getAtk()));
+            labeldefcharstory.setText("def " + String.valueOf(character.getDef()));
+
             stagepause.act(Gdx.graphics.getDeltaTime());
             stagepause.draw();
         }

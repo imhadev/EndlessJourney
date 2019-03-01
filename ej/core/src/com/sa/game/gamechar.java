@@ -217,55 +217,76 @@ public class gamechar {
         }
     }
 
-    public static void fightlvl2(int[] actions, int round, gamechar character, gamechar enemy, int immune, int bonusupgrade) {
+    public static void fightlvl2(int[] actions, int round, gamechar character, gamechar enemy, int immune, int bonusupgrade, boolean charatkup, boolean chardefup) {
+        int charatkup1 = 0;
+        int chardefup1 = 0;
+
         for(int i = 0; i < actions.length; i++) {
             actions[i] = 0;
         }
 
+        if (charatkup == true) {
+            charatkup1 = 1;
+        }
+        if (chardefup == true) {
+            chardefup1 = 1;
+        }
+
         //не может позволить себе все апгрейды
         if (enemy.getInc() < (enemy.getAtkupcost() + enemy.getDefupcost() + enemy.getAtkaddcost() + enemy.getDefaddcost())) {
-
             if (immune == 0) {
                 //если нет иммунитета и можно сделать бонусный апгрейд
-                if (bonusupgrade == 1) {
-                    enbonusupgrade(actions, enemy);
-                    enupgradeinc(actions, enemy);
-                    if (round > 6) {
-                        upnum1 = rand.nextInt(2) + 1;
-                        if (upnum1 == 1) {
-                            enupgradeatk(actions, enemy);
-                            enaddatk(actions, enemy);
-                        }
-                        else {
-                            enaddatk(actions, enemy);
-                            enupgradeatk(actions, enemy);
-                        }
+                if ((character.getAtk() - charatkup1 * character.getAtkupnum() - enemy.getDef() > 25) && (round > 6)) {
+                    enadddef(actions, enemy);
+                    enupgradedef(actions, enemy);
+                    if (enemy.getAtk() - (character.getDef() - chardefup1 * character.getDef()) >= character.getHp()) {
+                        enaddatk(actions, enemy);
+                        enupgradeatk(actions, enemy);
                     }
                     else {
                         enupgradeatk(actions, enemy);
                         enaddatk(actions, enemy);
                     }
                 }
-                //если нет иммунитета и нельзя сделать бонусный апгрейд
                 else {
-                    enupgradeinc(actions, enemy);
-                    enupgradedef(actions, enemy);
-                    enaddatk(actions, enemy);
-                    enadddef(actions, enemy);
+                    if (bonusupgrade == 1) {
+                        enbonusupgrade(actions, enemy);
+                        enupgradeinc(actions, enemy);
+                        if (round > 6) {
+                            upnum1 = rand.nextInt(2) + 1;
+                            if (upnum1 == 1) {
+                                enupgradeatk(actions, enemy);
+                                enaddatk(actions, enemy);
+                            } else {
+                                enaddatk(actions, enemy);
+                                enupgradeatk(actions, enemy);
+                            }
+                        } else {
+                            enupgradeatk(actions, enemy);
+                            enaddatk(actions, enemy);
+                        }
+                    }
+                    //если нет иммунитета и нельзя сделать бонусный апгрейд
+                    else {
+                        enupgradeinc(actions, enemy);
+                        enupgradedef(actions, enemy);
+                        enadddef(actions, enemy);
+                        enaddatk(actions, enemy);
+                    }
                 }
-            }
-            else {
+            } else {
                 //если есть иммунитет и можно сделать бонусный апгрейд
                 if (bonusupgrade == 1) {
                     upnum1 = rand.nextInt(2) + 1;
                     if (upnum1 == 1) {
                         actions[6] = 1;
+                        enemy.setInc(enemy.getInc() + enemy.getIncupnum());
                         actions[12] = 1;
 
                         enupgradeatk(actions, enemy);
-                    }
-                    else {
+                    } else {
                         actions[7] = 1;
+                        enemy.setAtk(enemy.getAtk() + enemy.getAtkupnum());
                         actions[12] = 2;
 
                         enupgradeinc(actions, enemy);
@@ -336,7 +357,9 @@ public class gamechar {
         atkfield = rand.nextInt(3) + 1;
 
         actions[atkfield - 1] = 1;
-        actions[9] = 1;
+        if (actions[9] != 2) {
+            actions[9] = 1;
+        }
     }
 
     public static void atkfieldch2(int[] actions) {
@@ -374,7 +397,9 @@ public class gamechar {
         deffield = rand.nextInt(3) + 1;
 
         actions[deffield + 2] = 1;
-        actions[10] = 1;
+        if (actions[10] != 2) {
+            actions[10] = 1;
+        }
     }
 
     public static void deffieldch2(int[] actions) {
@@ -401,12 +426,14 @@ public class gamechar {
             enemy.setGold(enemy.getGold() - enemy.getDefaddcost());
 
             actions[8] = 1;
+            enemy.setDef(enemy.getDef() + enemy.getDefupnum());
             actions[10] = 2;
             actions[12] = 3;
             deffieldch1(actions);
         }
         else {
             actions[8] = 1;
+            enemy.setDef(enemy.getDef() + enemy.getDefupnum());
             actions[10] = 1;
             actions[12] = 3;
         }
