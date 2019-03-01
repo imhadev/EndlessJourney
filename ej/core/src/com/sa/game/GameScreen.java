@@ -1209,7 +1209,6 @@ public class GameScreen extends ScreenAdapter {
                     }
                     if (dialogue1 == 2) {
                         if (statslvl1 == 0) {
-                            character.setDef(character.getDef() / 4);
                             if (character.getAtk() / 4 >= 48) {
                                 statsbalance = rand.nextInt(3) + 1;
                                 character.setAtk(character.getAtk() / 4 - statsbalance);
