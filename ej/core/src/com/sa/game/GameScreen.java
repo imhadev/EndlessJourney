@@ -1208,7 +1208,7 @@ public class GameScreen extends ScreenAdapter {
                         labelstory1.setPosition(WIDTH / 2 - btn_size1 * 4, HEIGHT - (HEIGHT / 4) + 20);
                     }
                     if (dialogue1 == 2) {
-                        /*if (statslvl1 == 0) {
+                        if (statslvl1 == 0) {
                             character.setDef(character.getDef() / 4);
                             if (character.getAtk() / 4 >= 48) {
                                 statsbalance = rand.nextInt(3) + 1;
@@ -1239,7 +1239,7 @@ public class GameScreen extends ScreenAdapter {
                             }
 
                             statslvl1 = 1;
-                        }*/
+                        }
                         labelstory2.setText("no ne beda y menya gde-to bulo" + "\n" +
                                 "zel`e kotoroe vernet tebe sil..." + "\n" + "\n" +
                                 "stoi tu tozhe eto slushal!?");
