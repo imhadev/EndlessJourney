@@ -2,7 +2,7 @@ package com.sa.game;
 
 import java.util.Random;
 
-public class gamechar {
+public class GameChar {
     private int hp;
     private int gold;
     private int inc;
@@ -26,7 +26,7 @@ public class gamechar {
     private static int upnum1;
     private static int upnum2;
 
-    public gamechar(int hp, int gold, int inc, int atk, int def, int incupcost, int atkupcost, int defupcost, int atkaddcost, int defaddcost, int incupnum, int atkupnum, int defupnum, int bonusgold) {
+    public GameChar(int hp, int gold, int inc, int atk, int def, int incupcost, int atkupcost, int defupcost, int atkaddcost, int defaddcost, int incupnum, int atkupnum, int defupnum, int bonusgold) {
         this.hp = hp;
         this.gold = gold;
         this.inc = inc;
@@ -155,7 +155,7 @@ public class gamechar {
         this.bonusgold = bonusgold;
     }
 
-    public static void fightlvl1(int[] actions, int round, gamechar character, gamechar enemy) {
+    public static void fightlvl1(int[] actions, int round, GameChar character, GameChar enemy) {
         for(int i = 0; i < actions.length; i++) {
             actions[i] = 0;
         }
@@ -217,7 +217,7 @@ public class gamechar {
         }
     }
 
-    public static void fightlvl2(int[] actions, int round, gamechar character, gamechar enemy, int immune, int bonusupgrade, boolean charatkup, boolean chardefup) {
+    public static void fightlvl2(int[] actions, int round, GameChar character, GameChar enemy, int immune, int bonusupgrade, boolean charatkup, boolean chardefup) {
         int charatkup1 = 0;
         int chardefup1 = 0;
 
@@ -314,7 +314,7 @@ public class gamechar {
         }
     }
 
-    public static void enupgradeinc(int[] actions, gamechar enemy) {
+    public static void enupgradeinc(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getIncupcost()) {
             enemy.setGold(enemy.getGold() - enemy.getIncupcost());
             enemy.setInc(enemy.getInc() + enemy.getIncupnum());
@@ -323,7 +323,7 @@ public class gamechar {
         }
     }
 
-    public static void enupgradeatk(int[] actions, gamechar enemy) {
+    public static void enupgradeatk(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getAtkupcost()) {
             enemy.setGold(enemy.getGold() - enemy.getAtkupcost());
             enemy.setAtk(enemy.getAtk() + enemy.getAtkupnum());
@@ -332,7 +332,7 @@ public class gamechar {
         }
     }
 
-    public static void enupgradedef(int[] actions, gamechar enemy) {
+    public static void enupgradedef(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getDefupcost()) {
             enemy.setGold(enemy.getGold() - enemy.getDefupcost());
             enemy.setDef(enemy.getDef() + enemy.getDefupnum());
@@ -341,7 +341,7 @@ public class gamechar {
         }
     }
 
-    public static void enaddatk(int[] actions, gamechar enemy) {
+    public static void enaddatk(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getAtkaddcost()) {
             enemy.setGold(enemy.getGold() - enemy.getAtkaddcost());
 
@@ -381,7 +381,7 @@ public class gamechar {
         actions[9] = 2;
     }
 
-    public static void enadddef(int[] actions, gamechar enemy) {
+    public static void enadddef(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getDefaddcost()) {
             enemy.setGold(enemy.getGold() - enemy.getDefaddcost());
 
@@ -421,7 +421,7 @@ public class gamechar {
         actions[10] = 2;
     }
 
-    public static void enbonusupgrade(int[] actions, gamechar enemy) {
+    public static void enbonusupgrade(int[] actions, GameChar enemy) {
         if (enemy.getGold() >= enemy.getDefaddcost()) {
             enemy.setGold(enemy.getGold() - enemy.getDefaddcost());
 

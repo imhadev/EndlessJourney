@@ -5,9 +5,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import static com.sa.game.MainClass.HEIGHT;
-import static com.sa.game.MainClass.WIDTH;
-
 public class Assets {
     public static Texture background;
     public static TextureRegion backgroundRegion;
